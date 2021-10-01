@@ -52,6 +52,9 @@
 import Notification from "~/components/Notification";
 
 export default {
+  // if user is already signed in, redirect to homepage using custom middleware
+  middleware: "guest",
+
   components: {
     Notification
   },
@@ -66,18 +69,19 @@ export default {
 
   methods: {
     async login() {
-      try {
+      const formify = function(email, password) {
         const form = new FormData();
-        form.append("username", this.email);
-        form.append("password", this.password);
-        let response = await this.$auth.loginWith("local", {
-          data: form
+        form.append("username", email);
+        form.append("password", password);
+        return form;
+      };
+      try {
+        await this.$auth.loginWith("local", {
+          data: formify(this.email, this.password)
         });
-        console.log("response", response);
-        // this.$router.push("/");
       } catch (e) {
         this.error = e.response.data.message;
-        console.log(e.response);
+        console.log(e.response); // for DEBUG
       }
     }
   }
