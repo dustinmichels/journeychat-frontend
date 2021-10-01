@@ -54,6 +54,10 @@
           <div class="has-text-centered" style="margin-top: 20px">
             Already got an account? <nuxt-link to="/login">Login</nuxt-link>
           </div>
+
+          <!-- <div id="example-2">
+            <button v-on:click="greet">Greet</button>
+          </div> -->
         </div>
       </div>
     </div>
@@ -79,25 +83,64 @@ export default {
 
   methods: {
     async register() {
+      //  MORE ERROR CATCHING
+      // this.$axios
+      //   .post("auth/signup", {
+      //     username: this.username,
+      //     email: this.email,
+      //     password: this.password
+      //   })
+      //   .catch(function(error) {
+      //     if (error.response) {
+      //       // The request was made and the server responded with a status code
+      //       // that falls out of the range of 2xx
+      //       console.log(error.response.data);
+      //       console.log(error.response.status);
+      //       console.log(error.response.headers);
+      //     } else if (error.request) {
+      //       // The request was made but no response was received
+      //       // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+      //       // http.ClientRequest in node.js
+      //       console.log(error.request);
+      //     } else {
+      //       // Something happened in setting up the request that triggered an Error
+      //       console.log("Error", error.message);
+      //     }
+      //     console.log(error.config);
+      //   });
+
       try {
         await this.$axios.post("auth/signup", {
           username: this.username,
           email: this.email,
           password: this.password
         });
-
-        await this.$auth.loginWith("local", {
-          data: {
-            username: this.email,
-            password: this.password
-          }
-        });
-
-        this.$router.push("/");
       } catch (e) {
         this.error = e.response.data.message;
       }
+
+      // OG WAY
+      // try {
+      // await this.$axios.post("auth/signup", {
+      //   username: this.username,
+      //   email: this.email,
+      //   password: this.password
+      // });
+      // const form = new FormData();
+      // form.append("username", this.email);
+      // form.append("password", this.password);
+      //   await this.$auth.loginWith("local", {
+      //     data: form
+      //   });
+      //   this.$router.push("/");
+      // } catch (e) {
+      //   this.error = e.response.data.message;
+      // }
     }
+
+    // greet: function(event) {
+    //   this.$router.push("/");
+    // }
   }
 };
 </script>

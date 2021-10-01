@@ -34,7 +34,7 @@ export default {
     // https://go.nuxtjs.dev/buefy
     "nuxt-buefy",
     "@nuxtjs/axios",
-    "@nuxtjs/auth"
+    "@nuxtjs/auth-next"
   ],
 
   axios: {
@@ -42,17 +42,29 @@ export default {
   },
 
   auth: {
+    redirect: {
+      login: "/login",
+      logout: "/",
+      callback: "/login",
+      home: "/"
+    },
     strategies: {
       local: {
+        token: {
+          property: "access_token"
+        },
+        user: {
+          property: false
+        },
         endpoints: {
           login: {
             url: "auth/login",
-            method: "post",
-            propertyName: "data.token"
+            method: "post"
           },
-          user: { url: "auth/me", method: "get", propertyName: "data" },
+          user: { url: "auth/me", method: "get", autoFetch: false },
           logout: false
         }
+        // autoFetchUser: false
       }
     }
   },
