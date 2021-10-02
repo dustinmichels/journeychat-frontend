@@ -5,10 +5,10 @@
         Your Rooms
       </p>
       <ul class="menu-list">
-        <li v-for="room of joinedRooms" :key="room.id">
+        <li v-for="room of joined_rooms" :key="room.id">
           <a
-            v-on:click="selectedRoomId = room.id"
-            v-bind:class="{ 'is-active': room.id === selectedRoomId }"
+            v-on:click="selected_room_id = room.id"
+            v-bind:class="{ 'is-active': room.id === selected_room_id }"
           >
             {{ room.name }}
           </a>
@@ -17,7 +17,7 @@
     </aside>
 
     <div class="column is-10 section">
-      {{ selectedRoom.name }}
+      {{ selected_room.name }}
       <div style="height:500px; overflow: scroll;">
         <Message />
         <Message />
@@ -54,46 +54,39 @@ import LoadingMessage from "~/components/LoadingMessage";
 
 export default {
   components: { Message, LoadingMessage },
-  middleware: "auth",
-
-  created() {
-    console.log("created called.");
-    this.getJoinedRooms();
-  },
 
   data() {
     return {
       // msg: "",
-      selectedRoomId: 0,
-      joinedRooms: []
+      selected_room_id: 1,
+      joined_rooms: [
+        {
+          name: "General",
+          is_private: false,
+          id: 1
+        },
+        {
+          name: "Sci-Fi Lovers",
+          is_private: false,
+          id: 2
+        },
+        {
+          name: "Python Fans",
+          is_private: false,
+          id: 3
+        }
+      ]
     };
   },
-
   methods: {
     onEnter() {
       console.log("Entered");
       this.$refs.chatbar.value = "";
-    },
-    async getJoinedRooms() {
-      try {
-        const headers = { Authorization: this.$auth.strategy.token.get() };
-        const response = await this.$axios.get("rooms/joined/", { headers });
-        this.joinedRooms = response.data;
-        this.selectedRoomId = this.joinedRooms[0].id;
-      } catch (e) {
-        this.error = e.response.data.message;
-        console.log(e.response); // for DEBUG
-      }
     }
   },
   computed: {
-    selectedRoom: function() {
-      const res = this.joinedRooms.find(x => x.id === this.selectedRoomId);
-      if (res == undefined) {
-        return { name: "" };
-      } else {
-        return res;
-      }
+    selected_room: function() {
+      return this.joined_rooms.find(x => x.id === this.selected_room_id);
     }
   }
 };
