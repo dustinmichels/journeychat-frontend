@@ -14,7 +14,15 @@ export default {
       { hid: "description", name: "description", content: "" },
       { name: "format-detection", content: "telephone=no" }
     ],
-    link: [{ rel: "icon", type: "image/x-icon", href: "/favicon.ico" }]
+    link: [
+      { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }
+      // {
+      //   rel: "stylesheet",
+      //   type: "text/css",
+      //   href:
+      //     "https://cdn.jsdelivr.net/npm/@mdi/font@5.8.55/css/materialdesignicons.min.css"
+      // }
+    ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -32,7 +40,8 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/buefy
-    "nuxt-buefy",
+    ["nuxt-buefy", { materialDesignIcons: true }],
+    // "nuxt-buefy",
     "@nuxtjs/axios",
     "@nuxtjs/auth-next"
   ],
