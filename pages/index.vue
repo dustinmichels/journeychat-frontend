@@ -1,13 +1,16 @@
 <template>
   <section class="section">
     <section class="main-content columns">
-      <aside class="column is-2 section">
+      <aside class="menu column is-2 section">
         <p class="menu-label is-hidden-touch">
           Your Rooms
         </p>
         <ul class="menu-list">
           <li v-for="room of joined_rooms" :key="room.id">
-            <a>
+            <a
+              v-on:click="selected_room_id = room.id"
+              v-bind:class="{ 'is-active': room.id === selected_room_id }"
+            >
               {{ room.name }}
             </a>
           </li>
@@ -15,7 +18,7 @@
       </aside>
 
       <div class="column is-10">
-        Hello
+        {{ selected_room.name }}
       </div>
     </section>
   </section>
@@ -25,6 +28,7 @@
 export default {
   data() {
     return {
+      selected_room_id: 1,
       joined_rooms: [
         {
           name: "General",
@@ -43,6 +47,11 @@ export default {
         }
       ]
     };
+  },
+  computed: {
+    selected_room: function() {
+      return this.joined_rooms.find(x => x.id === this.selected_room_id);
+    }
   }
 };
 </script>
