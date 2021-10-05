@@ -81,8 +81,10 @@ export default {
       console.log(token);
       this.ws = new WebSocket("ws://localhost:8000/api/v1/ws?token=" + token);
       this.ws.onmessage = event => {
-        console.log(event.data);
-        this.messages.push(event.data);
+        let data = JSON.parse(event.data);
+        console.log(data);
+        let msg = `USER #${data.user_id}: ${data.text}`;
+        this.messages.push(msg);
       };
       this.ws.onopen = function(event) {
         console.log(event);
