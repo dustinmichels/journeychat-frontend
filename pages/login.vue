@@ -8,28 +8,13 @@
           <Notification :message="error" v-if="error" />
 
           <form method="post" @submit.prevent="login">
-            <div class="field">
-              <label class="label">Email</label>
-              <div class="control">
-                <input
-                  type="email"
-                  class="input"
-                  name="email"
-                  v-model="email"
-                />
-              </div>
-            </div>
-            <div class="field">
-              <label class="label">Password</label>
-              <div class="control">
-                <input
-                  type="password"
-                  class="input"
-                  name="password"
-                  v-model="password"
-                />
-              </div>
-            </div>
+            <b-field label="Email">
+              <b-input type="email" v-model="email" maxlength="30"> </b-input>
+            </b-field>
+            <b-field label="Password">
+              <b-input type="password" v-model="password" password-reveal>
+              </b-input>
+            </b-field>
             <div class="control">
               <button type="submit" class="button is-dark is-fullwidth">
                 Log In
@@ -79,8 +64,9 @@ export default {
         await this.$auth.loginWith("local", {
           data: formify(this.email, this.password)
         });
+        // this.$axios.setToken(this.$auth.strategy.token.get());
       } catch (e) {
-        this.error = e.response.data.message;
+        this.error = e.response.data.message || e.response.data.detail;
         console.log(e.response); // for DEBUG
       }
     }

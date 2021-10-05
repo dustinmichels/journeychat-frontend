@@ -1,6 +1,6 @@
 <template>
   <section class="columns">
-    <aside class="menu column is-2 section">
+    <aside class="menu column is-2 section has-background-warning-light">
       <p class="menu-label is-hidden-touch">
         Your Rooms
       </p>
@@ -14,18 +14,20 @@
           </a>
         </li>
       </ul>
+
+      <p class="menu-label"></p>
+
+      <b-button rounded icon-left="plus">
+        Add
+      </b-button>
     </aside>
 
     <div class="column is-10 section">
-      {{ selectedRoom.name }}
+      <span class="is-size-3">{{ selectedRoom.name }}</span>
       <div style="height:500px; overflow: scroll;">
-        <Message />
-        <Message />
-        <Message />
-        <Message />
-        <Message />
-        <Message />
-        <Message />
+        <li v-for="(msg, index) in messages" :key="index">
+          {{ msg }}
+        </li>
       </div>
 
       <div class="field has-addons">
@@ -35,7 +37,7 @@
             type="text"
             ref="chatbar"
             placeholder="Your message..."
-            v-on:keyup.enter="onEnter"
+            v-on:keyup.enter="onSendMessage"
           />
         </div>
         <div class="control">
@@ -51,6 +53,7 @@
 <script>
 import Message from "~/components/Message";
 import LoadingMessage from "~/components/LoadingMessage";
+import { mapGetters } from "vuex";
 
 export default {
   components: { Message, LoadingMessage },
@@ -59,34 +62,70 @@ export default {
   created() {
     console.log("created called.");
     this.getJoinedRooms();
+    this.wsConnect();
   },
 
   data() {
     return {
       // msg: "",
       selectedRoomId: 0,
-      joinedRooms: []
+      joinedRooms: [],
+      ws: null,
+      messages: ["Example msg 1. -- User1", "Example msg 2. -- User2"]
     };
   },
 
   methods: {
-    onEnter() {
+    wsConnect() {
+      const token = this.$auth.strategy.token.get().split(" ")[1];
+      console.log(token);
+      this.ws = new WebSocket("ws://localhost:8000/api/v1/ws?token=" + token);
+      this.ws.onmessage = event => {
+        console.log(event.data);
+        this.messages.push(event.data);
+      };
+      this.ws.onopen = function(event) {
+        console.log(event);
+        console.log("Successfully connected to the echo websocket server...");
+      };
+      this.ws.onclose = function(event) {
+        console.log(event);
+        console.log("WebSocket closed");
+      };
+      this.ws.onerror = function(event) {
+        console.log(event);
+        console.log("WebSocket Error!");
+      };
+      console.log(this.ws.url);
+    },
+    onSendMessage() {
       console.log("Entered");
-      this.$refs.chatbar.value = "";
+      const input = this.$refs.chatbar;
+      const data = {
+        user_id: this.loggedInUser.id,
+        room_id: this.selectedRoomId,
+        timestamp: new Date().toISOString(),
+        text: input.value
+      };
+      const msg = JSON.stringify(data);
+      this.ws.send(msg);
+      input.value = "";
     },
     async getJoinedRooms() {
       try {
-        const headers = { Authorization: this.$auth.strategy.token.get() };
-        const response = await this.$axios.get("rooms/joined/", { headers });
+        // const headers = { Authorization: this.$auth.strategy.token.get() };
+        // const response = await this.$axios.get("rooms/joined/", { headers });
+        const response = await this.$axios.get("rooms/joined/");
         this.joinedRooms = response.data;
         this.selectedRoomId = this.joinedRooms[0].id;
       } catch (e) {
-        this.error = e.response.data.message;
-        console.log(e.response); // for DEBUG
+        this.joinedRooms = [];
+        this.selectedRoomId = 0;
       }
     }
   },
   computed: {
+    ...mapGetters(["loggedInUser"]),
     selectedRoom: function() {
       const res = this.joinedRooms.find(x => x.id === this.selectedRoomId);
       if (res == undefined) {
