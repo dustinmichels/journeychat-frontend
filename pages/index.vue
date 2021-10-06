@@ -36,11 +36,21 @@
       </div>
 
       <div style="height:500px; overflow: scroll;">
-        <Message
-          v-for="(msg, index) in messagesWithUsers"
-          :key="index"
-          :msg="msg"
-        />
+        <section v-if="dataLoaded">
+          <template v-if="!messages.length">
+            No messages!
+          </template>
+          <template v-else>
+            <Message
+              v-for="(msg, index) in messagesWithUsers"
+              :key="index"
+              :msg="msg"
+            />
+          </template>
+        </section>
+        <template v-else>
+          <LoadingMessage />
+        </template>
       </div>
 
       <div class="field has-addons">
@@ -89,7 +99,8 @@ export default {
       members: [],
       defaultUser: {
         username: "Unknown User"
-      }
+      },
+      dataLoaded: false
     };
   },
 
@@ -168,15 +179,18 @@ export default {
   },
   watch: {
     selectedRoomId: async function(roomId) {
+      this.dataLoaded = false;
       if (roomId == undefined) {
         this.messages = [];
+        this.dataLoaded = true;
       }
       try {
         const response = await this.$axios.get(
           `messages/room/${roomId}/?skip=0&limit=100`
         );
         this.messages = response.data;
-        this.getMembers();
+        await this.getMembers();
+        this.dataLoaded = true;
       } catch (e) {
         console.log("error!");
         console.log(e);

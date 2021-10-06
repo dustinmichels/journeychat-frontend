@@ -2,16 +2,19 @@
   <article class="media">
     <figure class="media-left">
       <p class="image is-64x64">
-        <img :src="msg.user.avatar" v-bind:style="styleObj" />
+        <img
+          width="64px"
+          height="64px"
+          :src="msg.user.avatar"
+          :style="styleObj"
+        />
       </p>
     </figure>
     <div class="media-content">
       <div class="content">
         <p>
-          <span v-bind:class="{ 'has-background-info-light': isOwnMessage }">
-            <strong>{{ msg.user.display_name }}</strong>
-          </span>
-          <small>{{ msg.user.username }}</small>
+          <strong>{{ msg.user.display_name }}</strong>
+          <small>@{{ msg.user.username }}</small>
           <small>31m</small>
           <br />
           {{ msg.text }}
@@ -38,7 +41,8 @@ export default {
     },
     styleObj: function() {
       return {
-        border: "1px solid #ffe08a;"
+        borderRadius: "20%",
+        border: this.isOwnMessage ? "2px solid #7957d5" : "1px solid grey"
       };
     }
   }
