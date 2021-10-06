@@ -1,5 +1,6 @@
 <template>
   <section class="columns">
+    <!-- SIDEBAR -->
     <aside class="menu column is-3 section has-background-warning-light">
       <p class="menu-label is-hidden-touch">
         Your Rooms
@@ -11,64 +12,20 @@
             v-bind:class="{ 'is-active': room.id === selectedRoomId }"
           >
             {{ room.name }}
-            <!-- <b-field>
-              <b-tag rounded>Private</b-tag>
-            </b-field> -->
           </a>
         </li>
       </ul>
-
-      <p class="menu-label"></p>
-
       <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
     </aside>
 
+    <!-- MAIN CHAT WINDOW -->
     <div class="column is-9 section">
-      <div class="">
-        <span class="is-size-3">{{ selectedRoom.name }} </span>
-        <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
-
-        <MembersModal :members="members" />
-
-        <button v-on:click="leaveRoom">
-          <b-icon icon="exit-run" class="buttons"> </b-icon>
-        </button>
-      </div>
-
-      <div style="height:500px; overflow: scroll;">
-        <section v-if="dataLoaded">
-          <template v-if="!messages.length">
-            No messages!
-          </template>
-          <template v-else>
-            <Message
-              v-for="(msg, index) in messagesWithUsers"
-              :key="index"
-              :msg="msg"
-            />
-          </template>
-        </section>
-        <template v-else>
-          <LoadingMessage />
-        </template>
-      </div>
-
-      <div class="field has-addons">
-        <div class="control is-expanded">
-          <input
-            class="input "
-            type="text"
-            ref="chatbar"
-            placeholder="Your message..."
-            v-on:keyup.enter="onSendMessage"
-          />
-        </div>
-        <div class="control">
-          <a class="button is-info">
-            <b-icon icon="send" size="is-small"> </b-icon>
-          </a>
-        </div>
-      </div>
+      <ChatWindow
+        :selected-room="selectedRoom"
+        :data-loaded="dataLoaded"
+        :members="members"
+        :messages-with-users="messagesWithUsers"
+      />
     </div>
   </section>
 </template>
@@ -88,7 +45,7 @@ export default {
 
   created() {
     console.log("created called.");
-    this.test();
+    // this.test();
     this.getJoinedRooms();
     this.wsConnect();
   },
