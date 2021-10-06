@@ -1,12 +1,7 @@
 <template>
   <section>
     <div class="buttons">
-      <b-button
-        rounded
-        icon-left="plus"
-        label="Add"
-        @click="isCardModalActive = true"
-      />
+      <b-button rounded icon-left="plus" label="Add" @click="launchModal" />
     </div>
 
     <b-modal v-model="isCardModalActive" :width="640" scroll="keep">
@@ -17,28 +12,20 @@
           </p>
         </header>
         <div class="card-content">
-          <p v-if="$fetchState.pending">Loading....</p>
-          <p v-else-if="$fetchState.error">Error while fetching mountains</p>
-          <div v-else>
-            <div
-              v-for="(room, index) in displayRooms"
-              :key="index"
-              class="media"
-            >
-              <div class="media-content">
-                <div class="content">
-                  {{ room.name }}
-                </div>
+          <div v-for="(room, index) in displayRooms" :key="index" class="media">
+            <div class="media-content">
+              <div class="content">
+                {{ room.name }}
               </div>
-              <div class="media-right">
-                <b-button
-                  @click="joinRoom(room.id)"
-                  type="is-success is-light"
-                  icon-right="plus"
-                >
-                  Join
-                </b-button>
-              </div>
+            </div>
+            <div class="media-right">
+              <b-button
+                @click="joinRoom(room.id)"
+                type="is-success is-light"
+                icon-right="plus"
+              >
+                Join
+              </b-button>
             </div>
           </div>
         </div>
@@ -67,24 +54,6 @@
             <b-field label="Room Name">
               <b-input v-model="createRoomForm.roomName"></b-input>
             </b-field>
-
-            <!-- <b-field>
-              <b-radio-button
-                native-value="Public"
-                type="is-danger is-light is-outlined"
-                v-model="createRoomForm.radio"
-              >
-                <span>Public</span>
-              </b-radio-button>
-              <b-radio-button
-                native-value="Private"
-                type="is-success is-light is-outlined"
-                v-model="createRoomForm.radio"
-              >
-                <span>Private</span>
-              </b-radio-button>
-            </b-field> -->
-
             <div class="block">
               <b-radio
                 v-model="createRoomForm.isPrivate"
@@ -128,12 +97,15 @@ export default {
       }
     };
   },
-  async fetch() {
-    this.rooms = await fetch("http://127.0.0.1:8000/api/v1/rooms/").then(res =>
-      res.json()
-    );
-  },
   methods: {
+    launchModal() {
+      this.isCardModalActive = true;
+      this.getRooms();
+    },
+    async getRooms() {
+      const response = await this.$axios.get("rooms/");
+      this.rooms = response.data;
+    },
     async joinRoom(roomId) {
       console.log(roomId);
       const response = await this.$axios.put("actions/join/" + roomId);

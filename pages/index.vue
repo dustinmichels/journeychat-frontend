@@ -11,6 +11,9 @@
             v-bind:class="{ 'is-active': room.id === selectedRoomId }"
           >
             {{ room.name }}
+            <!-- <b-field>
+              <b-tag rounded>Private</b-tag>
+            </b-field> -->
           </a>
         </li>
       </ul>
@@ -20,17 +23,15 @@
       <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
     </aside>
 
-    <div class="column is-10 section">
-      <div>
-        <span class="is-size-3">{{ selectedRoom.name }} </span>
-        <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
+    <div class="column is-9 section">
+      <span class="is-size-3">{{ selectedRoom.name }} </span>
+      <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
 
-        <MembersModal :members="members" />
+      <MembersModal :members="members" />
 
-        <button v-on:click="leaveRoom">
-          <b-icon icon="exit-run" class="buttons"> </b-icon>
-        </button>
-      </div>
+      <button v-on:click="leaveRoom">
+        <b-icon icon="exit-run" class="buttons"> </b-icon>
+      </button>
 
       <div style="height:500px; overflow: scroll;">
         <li v-for="(msg, index) in messages" :key="index">
