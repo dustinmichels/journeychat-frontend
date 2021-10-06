@@ -79,6 +79,8 @@ import Modal from "~/components/Modal";
 import LoadingMessage from "~/components/LoadingMessage";
 import { mapGetters } from "vuex";
 
+import { getRooms } from "@/api.js";
+
 export default {
   components: { Message, LoadingMessage, Modal },
   middleware: "auth",
