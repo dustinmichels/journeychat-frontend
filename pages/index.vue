@@ -24,14 +24,16 @@
     </aside>
 
     <div class="column is-9 section">
-      <span class="is-size-3">{{ selectedRoom.name }} </span>
-      <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
+      <div class="">
+        <span class="is-size-3">{{ selectedRoom.name }} </span>
+        <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
 
-      <MembersModal :members="members" />
+        <MembersModal :members="members" />
 
-      <button v-on:click="leaveRoom">
-        <b-icon icon="exit-run" class="buttons"> </b-icon>
-      </button>
+        <button v-on:click="leaveRoom">
+          <b-icon icon="exit-run" class="buttons"> </b-icon>
+        </button>
+      </div>
 
       <div style="height:500px; overflow: scroll;">
         <Message

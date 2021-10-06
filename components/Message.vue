@@ -1,18 +1,18 @@
 <template>
   <article class="media">
-    <figure class="media-left" v-bind:style="styleObj">
+    <figure class="media-left">
       <p class="image is-64x64">
-        <img :src="msg.user.avatar" />
+        <img :src="msg.user.avatar" v-bind:style="styleObj" />
       </p>
     </figure>
     <div class="media-content">
       <div class="content">
         <p>
-          <span v-bind:class="{ 'has-background-warning': isOwnMessage }">
+          <span v-bind:class="{ 'has-background-info-light': isOwnMessage }">
             <strong>{{ msg.user.display_name }}</strong>
-            <small>{{ msg.user.username }}</small>
-            <small>31m</small>
           </span>
+          <small>{{ msg.user.username }}</small>
+          <small>31m</small>
           <br />
           {{ msg.text }}
         </p>
@@ -38,7 +38,6 @@ export default {
     },
     styleObj: function() {
       return {
-        color: "red;",
         border: "1px solid #ffe08a;"
       };
     }
