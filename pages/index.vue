@@ -34,15 +34,11 @@
       </button>
 
       <div style="height:500px; overflow: scroll;">
-        <li v-for="(msg, index) in messages" :key="index">
-          <span
-            v-bind:class="{
-              'has-text-primary': msg.user_id == loggedInUser.id
-            }"
-          >
-            User #{{ msg.user_id }}: {{ msg.text }} [{{ msg.timestamp }}]
-          </span>
-        </li>
+        <Message
+          v-for="(msg, index) in messagesWithUsers"
+          :key="index"
+          :msg="msg"
+        />
       </div>
 
       <div class="field has-addons">
@@ -88,7 +84,10 @@ export default {
       joinedRooms: [],
       ws: null,
       messages: [],
-      members: []
+      members: [],
+      defaultUser: {
+        username: "Unknown User"
+      }
     };
   },
 
@@ -100,7 +99,6 @@ export default {
       this.ws.onmessage = event => {
         let data = JSON.parse(event.data);
         console.log(data);
-        // let msg = `USER #${data.user_id}: ${data.text}`;
         this.messages.push(data);
       };
       this.ws.onopen = function(event) {
@@ -156,6 +154,14 @@ export default {
       );
       console.log(response);
       this.members = response.data;
+    },
+    getUser(userId) {
+      let user = this.members.find(x => x.id === userId);
+      if (typeof user === "undefined") {
+        return this.defaultUser;
+      } else {
+        return user;
+      }
     }
   },
   watch: {
@@ -185,6 +191,12 @@ export default {
       } else {
         return res;
       }
+    },
+    messagesWithUsers: function() {
+      return this.messages.map(m => {
+        m["user"] = this.getUser(m.user_id);
+        return m;
+      });
     }
   }
 };

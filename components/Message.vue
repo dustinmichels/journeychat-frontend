@@ -1,34 +1,48 @@
 <template>
-  <article class="media">
-    <figure class="media-left">
+  <article class="media" v-bind:style="styleObj">
+    <figure v-bind:class="isOwnMessage ? 'media-right' : 'media-left'">
       <p class="image is-64x64">
-        <img src="https://bulma.io/images/placeholders/128x128.png" />
+        <img :src="msg.user.avatar" />
       </p>
     </figure>
     <div class="media-content">
       <div class="content">
-        <p>
-          <strong>John Smith</strong> <small>@johnsmith</small>
+        <p
+          v-bind:class="{
+            'has-text-primary': msg.user_id == loggedInUser.id
+          }"
+        >
+          <strong>{{ msg.user.display_name }}</strong>
+          <small>{{ msg.user.username }}</small>
           <small>31m</small>
           <br />
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ornare
-          magna eros, eu pellentesque tortor vestibulum ut. Maecenas non massa
-          sem. Etiam finibus odio quis feugiat facilisis.
+          {{ msg.text }}
         </p>
       </div>
-      <nav class="level is-mobile">
-        <div class="level-left">
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-reply"></i></span>
-          </a>
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-retweet"></i></span>
-          </a>
-          <a class="level-item">
-            <span class="icon is-small"><i class="fas fa-heart"></i></span>
-          </a>
-        </div>
-      </nav>
     </div>
   </article>
 </template>
+
+<script>
+import { mapGetters } from "vuex";
+
+export default {
+  props: {
+    msg: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    ...mapGetters(["loggedInUser"]),
+    isOwnMessage: function() {
+      return this.msg.user_id === this.loggedInUser.id;
+    },
+    styleObj: function() {
+      return {
+        "text-align": this.isOwnMessage ? "right" : "left"
+      };
+    }
+  }
+};
+</script>
