@@ -78,8 +78,9 @@ import Message from "~/components/Message";
 import Modal from "~/components/Modal";
 import LoadingMessage from "~/components/LoadingMessage";
 import { mapGetters } from "vuex";
+import { mapMutations } from "vuex";
 
-import { getRooms } from "@/api.js";
+import { api } from "@/api.js";
 
 export default {
   components: { Message, LoadingMessage, Modal },
@@ -87,6 +88,7 @@ export default {
 
   created() {
     console.log("created called.");
+    this.test();
     this.getJoinedRooms();
     this.wsConnect();
   },
@@ -107,6 +109,9 @@ export default {
   },
 
   methods: {
+    test(num) {
+      this.$store.dispatch("getMembers", 1);
+    },
     wsConnect() {
       const token = this.$auth.strategy.token.get().split(" ")[1];
       console.log(token);
@@ -164,11 +169,11 @@ export default {
       this.getJoinedRooms();
     },
     async getMembers() {
-      const response = await this.$axios.get(
-        "members/room/" + this.selectedRoomId
-      );
-      console.log(response);
-      this.members = response.data;
+      // const response = await this.$axios.get(
+      //   "members/room/" + this.selectedRoomId
+      // );
+      // console.log(response);
+      this.members = await api.getMembers(this.$axios, this.selectedRoomId);
     },
     getUser(userId) {
       let user = this.members.find(x => x.id === userId);
@@ -187,10 +192,11 @@ export default {
         this.dataLoaded = true;
       }
       try {
-        const response = await this.$axios.get(
-          `messages/room/${roomId}/?skip=0&limit=100`
-        );
-        this.messages = response.data;
+        // const response = await this.$axios.get(
+        //   `messages/room/${roomId}/?skip=0&limit=100`
+        // );
+        // this.messages = response.data;
+        this.messages = await api.getRooms(this.$axios, roomId);
         await this.getMembers();
         this.dataLoaded = true;
       } catch (e) {
@@ -201,7 +207,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(["loggedInUser"]),
+    ...mapGetters(["loggedInUser", "myRooms"]),
     selectedRoom: function() {
       const res = this.joinedRooms.find(x => x.id === this.selectedRoomId);
       if (res == undefined) {

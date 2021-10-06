@@ -1,7 +1,8 @@
 export const state = () => {
   return {
     rooms: [],
-    members: []
+    currRoomMembers: [],
+    currRoomMessages: []
   };
 };
 
@@ -10,10 +11,10 @@ export const mutations = {
     state.rooms = rooms;
   },
   setMembers(state, members) {
-    state.members = members;
+    state.currRoomMembers = members;
   },
-  setAccount(state, account) {
-    state.account = account;
+  setMessages(state, messages) {
+    state.currRoomMessages = messages;
   }
 };
 
