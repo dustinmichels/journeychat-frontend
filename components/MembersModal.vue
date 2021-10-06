@@ -33,6 +33,9 @@
             </div>
           </div>
         </div>
+        <footer class="card-footer">
+          <a href="#" class="card-footer-item">Invite</a>
+        </footer>
       </div>
     </b-modal>
   </span>

@@ -28,7 +28,7 @@
         <MembersModal :members="members" />
 
         <button v-on:click="leaveRoom">
-          <b-icon icon="delete" class="buttons"> </b-icon>
+          <b-icon icon="exit-run" class="buttons"> </b-icon>
         </button>
       </div>
 

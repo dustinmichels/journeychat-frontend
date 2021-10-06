@@ -13,7 +13,7 @@
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">
-            Rooms to join
+            Join/Create
           </p>
         </header>
         <div class="card-content">
@@ -42,6 +42,71 @@
             </div>
           </div>
         </div>
+        <footer class="card-footer">
+          <a
+            @click="
+              isCardModalActive = false;
+              isCreateModalActive = true;
+            "
+            class="card-footer-item"
+            >Create new</a
+          >
+        </footer>
+      </div>
+    </b-modal>
+
+    <b-modal v-model="isCreateModalActive" :width="640" scroll="keep">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            Create New Room
+          </p>
+        </header>
+        <div class="card-content">
+          <form method="post" @submit.prevent="createRoom">
+            <b-field label="Room Name">
+              <b-input v-model="createRoomForm.roomName"></b-input>
+            </b-field>
+
+            <!-- <b-field>
+              <b-radio-button
+                native-value="Public"
+                type="is-danger is-light is-outlined"
+                v-model="createRoomForm.radio"
+              >
+                <span>Public</span>
+              </b-radio-button>
+              <b-radio-button
+                native-value="Private"
+                type="is-success is-light is-outlined"
+                v-model="createRoomForm.radio"
+              >
+                <span>Private</span>
+              </b-radio-button>
+            </b-field> -->
+
+            <div class="block">
+              <b-radio
+                v-model="createRoomForm.isPrivate"
+                name="name"
+                native-value="false"
+              >
+                Public
+              </b-radio>
+              <b-radio
+                v-model="createRoomForm.isPrivate"
+                name="name"
+                native-value="true"
+              >
+                Private
+              </b-radio>
+            </div>
+
+            <div class="control">
+              <b-button type="is-primary" native-type="submit">Submit</b-button>
+            </div>
+          </form>
+        </div>
       </div>
     </b-modal>
   </section>
@@ -53,7 +118,14 @@ export default {
   data() {
     return {
       isCardModalActive: false,
-      rooms: []
+      isCreateModalActive: false,
+      activeTab: 0,
+      rooms: [],
+      isSwitchedCustom: "Public",
+      createRoomForm: {
+        roomName: "",
+        isPrivate: "false"
+      }
     };
   },
   async fetch() {
@@ -67,6 +139,15 @@ export default {
       const response = await this.$axios.put("actions/join/" + roomId);
       console.log(response);
       this.isCardModalActive = false;
+      this.refreshCallback();
+    },
+    async createRoom() {
+      await this.$axios.post("rooms/", {
+        name: this.createRoomForm.roomName,
+        is_private: this.createRoomForm.isPrivate
+      });
+      this.createRoomForm.roomName = "";
+      this.isCreateModalActive = false;
       this.refreshCallback();
     }
   },
