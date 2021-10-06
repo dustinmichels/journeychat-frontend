@@ -1,20 +1,18 @@
 <template>
-  <article class="media" v-bind:style="styleObj">
-    <figure v-bind:class="isOwnMessage ? 'media-right' : 'media-left'">
+  <article class="media">
+    <figure class="media-left" v-bind:style="styleObj">
       <p class="image is-64x64">
         <img :src="msg.user.avatar" />
       </p>
     </figure>
     <div class="media-content">
       <div class="content">
-        <p
-          v-bind:class="{
-            'has-text-primary': msg.user_id == loggedInUser.id
-          }"
-        >
-          <strong>{{ msg.user.display_name }}</strong>
-          <small>{{ msg.user.username }}</small>
-          <small>31m</small>
+        <p>
+          <span v-bind:class="{ 'has-background-warning': isOwnMessage }">
+            <strong>{{ msg.user.display_name }}</strong>
+            <small>{{ msg.user.username }}</small>
+            <small>31m</small>
+          </span>
           <br />
           {{ msg.text }}
         </p>
@@ -40,7 +38,8 @@ export default {
     },
     styleObj: function() {
       return {
-        "text-align": this.isOwnMessage ? "right" : "left"
+        color: "red;",
+        border: "1px solid #ffe08a;"
       };
     }
   }
