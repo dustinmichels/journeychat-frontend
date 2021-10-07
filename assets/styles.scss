@@ -8,6 +8,7 @@ $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
 $twitter: #4099ff;
 $twitter-invert: findColorInvert($twitter);
+// $dark: #002a4e;
 
 // Lists and maps
 $custom-colors: null !default;
@@ -77,9 +78,18 @@ $link: $primary;
 $link-invert: $primary-invert;
 $link-focus-border: $primary;
 
+// Menu
+// $menu-list-link-padding: 0.8em;
+$menu-item-hover-background-color: #002a4e;
+// $menu-item-color: $text
+// $menu-item-hover-color: $text-strong
+// $menu-item-active-color: #002a4e;
+// $menu-item-active-background-color: #002a4e;
+
 // Fullscreen
 $navbar-height: 3.25rem;
 
+// if gapless:
 .columns {
   &.is-fullheight {
     min-height: calc(100vh - (#{$navbar-height} - 0.75rem));
@@ -90,6 +100,11 @@ $navbar-height: 3.25rem;
     justify-content: stretch;
     .column {
       overflow-y: auto;
+    }
+    &.is-gapless {
+      min-height: calc(100vh - (#{$navbar-height}));
+      max-height: calc(100vh - (#{$navbar-height}));
+      height: calc(100vh - (#{$navbar-height}));
     }
   }
 }

@@ -1,7 +1,8 @@
 <template>
-  <section class="columns is-fullheight">
-    <aside class="menu column is-3 section has-background-warning-light">
-      <p class="menu-label is-hidden-touch">
+  <section class="columns is-fullheight is-gapless">
+    <!-- SIDE MENU -->
+    <aside class="menu column is-2 has-background-dark">
+      <p class="menu-label is-hidden-touch p-4 has-text-light">
         Your Rooms
       </p>
       <ul class="menu-list">
@@ -9,34 +10,30 @@
           <a
             v-on:click="selectedRoomId = room.id"
             v-bind:class="{ 'is-active': room.id === selectedRoomId }"
+            class="px-4 has-text-light  "
           >
-            {{ room.name }}
-            <!-- <b-field>
-              <b-tag rounded>Private</b-tag>
-            </b-field</style>> -->
+            <span>
+              {{ room.name }}
+            </span>
           </a>
         </li>
       </ul>
-
       <p class="menu-label"></p>
-
       <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
     </aside>
 
-    <div class="column is-9 section is-flex is-flex-direction-column">
-      <div class="">
+    <div class="column is-10 is-flex is-flex-direction-column">
+      <!-- HEADER -->
+      <div class="px-4">
         <span class="is-size-3">{{ selectedRoom.name }} </span>
-        <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
-
         <MembersModal :members="members" />
-
         <button v-on:click="leaveRoom">
           <b-icon icon="exit-run" class="buttons"> </b-icon>
         </button>
       </div>
-
-      <div style="flex: 1; overflow: scroll;">
-        <!-- <div style="height:500px; overflow: scroll;"> -->
+      <hr style="margin: 0.5rem 0;" />
+      <!-- MESSAGES -->
+      <div class="p-4" style="flex: 1; overflow: scroll;">
         <section v-if="dataLoaded">
           <template v-if="!messages.length">
             No messages!
@@ -54,8 +51,8 @@
         </template>
       </div>
 
-      <!-- <div style="border: 1px solid black;"> -->
-      <div class="field has-addons py-3">
+      <!-- SEARCH -->
+      <div class="field has-addons p-4">
         <div class="control is-expanded">
           <input
             class="input "
@@ -72,9 +69,8 @@
           </button>
         </div>
       </div>
-      <!-- </div> -->
 
-      <!-- End -->
+      <!-- END -->
     </div>
   </section>
 </template>
