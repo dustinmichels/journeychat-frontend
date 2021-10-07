@@ -15,11 +15,8 @@
         <p>
           <strong>{{ msg.user.display_name }}</strong>
           <small>@{{ msg.user.username }}</small>
-          <b-tooltip
-            :label="longDateTime(msg.timestamp)"
-            type="is-dark"
-            append-to-body
-          >
+          <!-- append-to-body -->
+          <b-tooltip :label="longDateTime(msg.timestamp)" type="is-dark">
             <small
               class="has-text-grey"
               style="text-decoration:none"

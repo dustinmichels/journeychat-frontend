@@ -13,7 +13,7 @@
             {{ room.name }}
             <!-- <b-field>
               <b-tag rounded>Private</b-tag>
-            </b-field> -->
+            </b-field</style>> -->
           </a>
         </li>
       </ul>
@@ -35,6 +35,7 @@
         </button>
       </div>
 
+      <!-- <div style="overflow: scroll;"> -->
       <div style="height:500px; overflow: scroll;">
         <section v-if="dataLoaded">
           <template v-if="!messages.length">
@@ -61,6 +62,7 @@
             ref="chatbar"
             placeholder="Your message..."
             v-on:keyup.enter="onSendMessage"
+            autofocus
           />
         </div>
         <div class="control">
@@ -88,14 +90,12 @@ export default {
   middleware: "auth",
 
   created() {
-    // console.log("created called.");
     this.getJoinedRooms();
     this.socketConnect();
   },
 
   data() {
     return {
-      // msg: "",
       selectedRoomId: 0,
       joinedRooms: [],
       socket: null,
@@ -227,6 +227,15 @@ export default {
         m["user"] = this.getUser(m.user_id);
         return m;
       });
+    },
+    windowHeight() {
+      try {
+        let windowHeight = window.innerHeight;
+        let navbarHeight = document.getElementById("navbar").offsetHeight;
+        return `${windowHeight - navbarHeight}px`;
+      } catch {
+        return "500px";
+      }
     }
   }
 };
