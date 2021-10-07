@@ -1,5 +1,5 @@
 <template>
-  <section class="columns">
+  <section class="columns is-fullheight">
     <aside class="menu column is-3 section has-background-warning-light">
       <p class="menu-label is-hidden-touch">
         Your Rooms
@@ -23,7 +23,7 @@
       <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
     </aside>
 
-    <div class="column is-9 section">
+    <div class="column is-9 section is-flex is-flex-direction-column">
       <div class="">
         <span class="is-size-3">{{ selectedRoom.name }} </span>
         <!-- <b-button type="is-danger" size="is-small" icon-right="delete" /> -->
@@ -35,8 +35,8 @@
         </button>
       </div>
 
-      <!-- <div style="overflow: scroll;"> -->
-      <div style="height:500px; overflow: scroll;">
+      <div style="flex: 1; overflow: scroll;">
+        <!-- <div style="height:500px; overflow: scroll;"> -->
         <section v-if="dataLoaded">
           <template v-if="!messages.length">
             No messages!
@@ -54,23 +54,27 @@
         </template>
       </div>
 
-      <div class="field has-addons">
+      <!-- <div style="border: 1px solid black;"> -->
+      <div class="field has-addons py-3">
         <div class="control is-expanded">
           <input
             class="input "
             type="text"
             ref="chatbar"
             placeholder="Your message..."
-            v-on:keyup.enter="onSendMessage"
+            @keyup.enter="onSendMessage"
             autofocus
           />
         </div>
         <div class="control">
-          <a class="button is-info">
+          <button class="button is-info" @click="onSendMessage">
             <b-icon icon="send" size="is-small"> </b-icon>
-          </a>
+          </button>
         </div>
       </div>
+      <!-- </div> -->
+
+      <!-- End -->
     </div>
   </section>
 </template>

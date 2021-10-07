@@ -44,6 +44,10 @@ export default {
       required: true
     }
   },
+  mounted() {
+    // Automatically scroll to element when created
+    this.$el.scrollIntoView();
+  },
   methods: {
     /**
      * All timestamps are UTC, but when returned from server
