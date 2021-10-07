@@ -39,9 +39,7 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
-    // https://go.nuxtjs.dev/buefy
     ["nuxt-buefy", { materialDesignIcons: true }],
-    // "nuxt-buefy",
     "@nuxtjs/axios",
     "@nuxtjs/auth-next"
   ],

@@ -107,9 +107,7 @@ export default {
       this.rooms = response.data;
     },
     async joinRoom(roomId) {
-      console.log(roomId);
       const response = await this.$axios.put("actions/join/" + roomId);
-      console.log(response);
       this.isCardModalActive = false;
       this.refreshCallback();
     },

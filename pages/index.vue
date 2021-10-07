@@ -79,16 +79,18 @@ import Modal from "~/components/Modal";
 import LoadingMessage from "~/components/LoadingMessage";
 import { mapGetters } from "vuex";
 
-import { getRooms } from "@/api.js";
+import io from "socket.io-client";
+
+// import { getRooms } from "@/api.js";
 
 export default {
   components: { Message, LoadingMessage, Modal },
   middleware: "auth",
 
   created() {
-    console.log("created called.");
+    // console.log("created called.");
     this.getJoinedRooms();
-    this.wsConnect();
+    this.socketConnect();
   },
 
   data() {
@@ -96,7 +98,7 @@ export default {
       // msg: "",
       selectedRoomId: 0,
       joinedRooms: [],
-      ws: null,
+      socket: null,
       messages: [],
       members: [],
       defaultUser: {
@@ -107,40 +109,50 @@ export default {
   },
 
   methods: {
-    wsConnect() {
+    socketConnect() {
+      if (!this.socket) {
+        this.createSocketConnection();
+      } else {
+        console.log("Already connected!");
+      }
+    },
+    createSocketConnection() {
       const token = this.$auth.strategy.token.get().split(" ")[1];
-      console.log(token);
-      this.ws = new WebSocket("ws://localhost:8000/api/v1/ws?token=" + token);
-      this.ws.onmessage = event => {
-        let data = JSON.parse(event.data);
+      this.socket = io("ws://127.0.0.1:8000", {
+        path: "/ws/socket.io",
+        autoConnect: true,
+        transports: ["websocket", "polling", "flashsocket"],
+        auth: { token: token }
+      });
+
+      this.socket.on("connect", () => {
+        console.log("connected:", this.socket.id);
+      });
+
+      this.socket.on("connect_error", e => {
+        console.error(e.toString());
+      });
+
+      this.socket.on("disconnect", () => {
+        console.log("disconnected:", this.socket.id);
+      });
+
+      this.socket.on("new-message", data => {
+        console.log("recieving something in the chat!");
         console.log(data);
         this.messages.push(data);
-      };
-      this.ws.onopen = function(event) {
-        console.log(event);
-        console.log("Successfully connected to the echo websocket server...");
-      };
-      this.ws.onclose = function(event) {
-        console.log(event);
-        console.log("WebSocket closed");
-      };
-      this.ws.onerror = function(event) {
-        console.log(event);
-        console.log("WebSocket Error!");
-      };
-      console.log(this.ws.url);
+      });
     },
     onSendMessage() {
       console.log("Entered");
       const input = this.$refs.chatbar;
-      const data = {
+      const msgData = {
         user_id: this.loggedInUser.id,
         room_id: this.selectedRoomId,
         timestamp: new Date().toISOString(),
         text: input.value
       };
-      const msg = JSON.stringify(data);
-      this.ws.send(msg);
+      this.socket.emit("new-message", msgData);
       input.value = "";
     },
     async getJoinedRooms() {
@@ -159,7 +171,7 @@ export default {
       const response = await this.$axios.put(
         "actions/leave/" + this.selectedRoomId
       );
-      console.log(response);
+      // console.log(response);
       // this.selectedRoomId = this.joinedRooms[0];
       this.getJoinedRooms();
     },
@@ -167,7 +179,7 @@ export default {
       const response = await this.$axios.get(
         "members/room/" + this.selectedRoomId
       );
-      console.log(response);
+      // console.log(response);
       this.members = response.data;
     },
     getUser(userId) {
