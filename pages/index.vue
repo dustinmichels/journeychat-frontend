@@ -1,5 +1,7 @@
 <template>
   <section class="columns is-fullheight is-gapless is-mobile">
+    <!-- <MembersModal v-bind:is-active="isMembersModalActive" /> -->
+
     <!-- SIDE MENU -->
     <aside class="menu column is-3 has-background-dark">
       <p class="menu-label is-hidden-touch p-4 has-text-light">
@@ -44,14 +46,15 @@
             </p>
           </div>
           <div class="level-right">
-            <!-- <p class="level-item">Room actions</p> -->
             <p class="level-item">
-              <b-button
+              <MembersModalButton :members="currRoom.members" />
+              <!-- <b-button
                 title="View members"
                 type="is-link"
                 outlined
                 icon-left="account-multiple"
-              />
+                @click="isMembersModalActive = true"
+              /> -->
             </p>
             <p class="level-item">
               <b-button
@@ -155,6 +158,7 @@ export default {
   data() {
     return {
       selectedRoomId: 0,
+      isMembersModalActive: false,
       socket: null,
       dataLoaded: false,
       defaultUser: {

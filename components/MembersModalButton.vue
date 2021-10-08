@@ -1,10 +1,14 @@
 <template>
   <span>
-    <button @click="isCardModalActive = true">
-      <b-icon icon="account-multiple" class="buttons"> </b-icon>
-    </button>
+    <b-button
+      title="View members"
+      type="is-link"
+      outlined
+      icon-left="account-multiple"
+      @click="isActive = true"
+    />
 
-    <b-modal v-model="isCardModalActive" :width="640" scroll="keep">
+    <b-modal v-model="isActive" :width="640" scroll="keep">
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">
@@ -26,7 +30,7 @@
           </div>
         </div>
         <footer class="card-footer">
-          <a href="#" class="card-footer-item">Invite</a>
+          <a @click="isActive = false" class="card-footer-item">Done</a>
         </footer>
       </div>
     </b-modal>
@@ -38,7 +42,7 @@ export default {
   props: ["members"],
   data() {
     return {
-      isCardModalActive: false
+      isActive: false
     };
   },
   methods: {},
