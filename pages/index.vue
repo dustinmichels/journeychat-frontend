@@ -1,5 +1,5 @@
 <template>
-  <section class="columns is-fullheight is-gapless">
+  <section class="columns is-fullheight is-gapless is-mobile">
     <!-- SIDE MENU -->
     <aside class="menu column is-2 has-background-dark">
       <p class="menu-label is-hidden-touch p-4 has-text-light">
@@ -12,46 +12,48 @@
             v-bind:class="{ 'is-active': room.id === selectedRoomId }"
             class="px-4 has-text-light  "
           >
-            <span>
-              {{ room.name }}
-            </span>
+            {{ room.name }}
           </a>
         </li>
+        <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
       </ul>
       <p class="menu-label"></p>
-      <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
     </aside>
 
+    <!-- CHAT WINDOW -->
     <div class="column is-10 is-flex is-flex-direction-column">
-      <!-- HEADER -->
+      <!-- CHAT:HEADER -->
       <div class="px-4">
-        <span class="is-size-3">{{ selectedRoom.name }} </span>
-        <MembersModal :members="members" />
+        <span class="is-size-3">{{ currRoom.name }} </span>
+        <MembersModalButton :members="currRoom.members" v-if="dataLoaded" />
+        <button v-else>
+          <b-icon icon="account-multiple" class="buttons"> </b-icon>
+        </button>
         <button v-on:click="leaveRoom">
           <b-icon icon="exit-run" class="buttons"> </b-icon>
         </button>
       </div>
       <hr style="margin: 0.5rem 0;" />
-      <!-- MESSAGES -->
+      <!-- CHAT:MESSAGES -->
       <div class="p-4" style="flex: 1; overflow: scroll;">
         <section v-if="dataLoaded">
-          <template v-if="!messages.length">
+          <template v-if="!currRoom.messages.length">
             No messages!
           </template>
-          <template v-else>
+          <div v-else>
             <Message
-              v-for="(msg, index) in messagesWithUsers"
+              v-for="(msg, index) in chatData[selectedRoomId].messages"
               :key="index"
               :msg="msg"
+              :user="getUser(msg.user_id)"
             />
-          </template>
+          </div>
         </section>
         <template v-else>
           <LoadingMessage />
         </template>
       </div>
-
-      <!-- SEARCH -->
+      <!-- CHAT:SEND -->
       <div class="field has-addons p-4">
         <div class="control is-expanded">
           <input
@@ -93,12 +95,10 @@ export default {
       selectedRoomId: 0,
       joinedRooms: [],
       socket: null,
-      messages: [],
-      members: [],
+      dataLoaded: false,
       defaultUser: {
         username: "Unknown User"
       },
-      dataLoaded: false,
       chatData: {} // Data about each room, keyed by room_id
     };
   },
@@ -107,10 +107,12 @@ export default {
     /** Create new empty room */
     roomBuilder(room) {
       return {
-        room: room,
+        name: room.name,
+        isPrivate: room.is_private,
         dataLoaded: false,
         messages: [],
-        members: []
+        members: [],
+        unread: 0
       };
     },
     socketConnect() {
@@ -131,8 +133,8 @@ export default {
         console.log("disconnected:", this.socket.id);
       });
       this.socket.on("new-message", data => {
-        console.log("recieved new message", data);
-        this.messages.push(data);
+        this.chatData[data.room_id].messages.push(data);
+        this.chatData[data.room_id].unread++;
       });
     },
     onSendMessage() {
@@ -154,7 +156,8 @@ export default {
         this.selectedRoomId = this.joinedRooms[0].id;
         // Init chat data
         this.joinedRooms.forEach(room => {
-          this.chatData[room.id] = this.roomBuilder(room);
+          this.$set(this.chatData, room.id, this.roomBuilder(room));
+          // this.chatData[room.id] = this.roomBuilder(room);
         });
       } catch (e) {
         this.joinedRooms = [];
@@ -168,7 +171,7 @@ export default {
       this.getJoinedRooms();
     },
     getUser(userId) {
-      let user = this.members.find(x => x.id === userId);
+      let user = this.currRoom.members.find(x => x.id === userId);
       if (typeof user === "undefined") {
         return this.defaultUser;
       } else {
@@ -176,10 +179,11 @@ export default {
       }
     },
     async onRoomSwitch(roomId) {
+      console.log("room switch!");
       let room = this.chatData[roomId];
       if (!room.dataLoaded) {
+        console.log("Loading data...");
         try {
-          console.log("Loading data...");
           room.messages = await api.getRoomMessages(this.$axios, roomId);
           room.members = await api.getRoomMembers(this.$axios, roomId);
           room.dataLoaded = true;
@@ -187,36 +191,22 @@ export default {
           console.log("error!");
           console.log(e);
         }
+      } else {
+        console.log("Already got data");
       }
     }
   },
   watch: {
     selectedRoomId: async function(roomId) {
-      this.onRoomSwitch(roomId);
-
       this.dataLoaded = false;
-      if (roomId == undefined) {
-        this.messages = [];
-        this.dataLoaded = true;
-      }
-      try {
-        this.messages = await api.getRoomMessages(this.$axios, roomId);
-        this.members = await api.getRoomMembers(
-          this.$axios,
-          this.selectedRoomId
-        );
-        // this.messages = response.data;
-        this.dataLoaded = true;
-      } catch (e) {
-        console.log("error!");
-        console.log(e);
-        this.messages = [];
-      }
+      await this.onRoomSwitch(roomId);
+      this.dataLoaded = this.currRoom.dataLoaded;
     }
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
-    selectedRoom: function() {
+    /** Retrieve joined room from list */
+    joinedRoom: function() {
       const res = this.joinedRooms.find(x => x.id === this.selectedRoomId);
       if (res == undefined) {
         return { name: "" };
@@ -224,14 +214,13 @@ export default {
         return res;
       }
     },
-    currRoomData: function() {
-      return this.chatData[this.selectedRoomId];
-    },
-    messagesWithUsers: function() {
-      return this.messages.map(m => {
-        m["user"] = this.getUser(m.user_id);
-        return m;
-      });
+    /** Retrieve all current room data from chatData */
+    currRoom: function() {
+      const data = this.chatData[this.selectedRoomId];
+      if (!data) {
+        return this.roomBuilder({});
+      }
+      return data;
     }
   }
 };

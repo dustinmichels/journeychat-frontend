@@ -1,14 +1,14 @@
 <template>
   <section>
-    <div class="buttons">
+    <div class="buttons p-4">
       <b-button rounded icon-left="plus" label="Add" @click="launchModal" />
     </div>
 
-    <b-modal v-model="isCardModalActive" :width="640" scroll="keep">
+    <b-modal v-model="isJoinModalActive" :width="640" scroll="keep">
       <div class="card">
         <header class="card-header">
           <p class="card-header-title">
-            Join/Create
+            Join public rooms
           </p>
         </header>
         <div class="card-content">
@@ -32,7 +32,7 @@
         <footer class="card-footer">
           <a
             @click="
-              isCardModalActive = false;
+              isJoinModalActive = false;
               isCreateModalActive = true;
             "
             class="card-footer-item"
@@ -86,7 +86,7 @@ export default {
   props: ["refreshCallback", "joinedRooms"],
   data() {
     return {
-      isCardModalActive: false,
+      isJoinModalActive: false,
       isCreateModalActive: false,
       activeTab: 0,
       rooms: [],
@@ -99,7 +99,7 @@ export default {
   },
   methods: {
     launchModal() {
-      this.isCardModalActive = true;
+      this.isJoinModalActive = true;
       this.getRooms();
     },
     async getRooms() {
@@ -108,7 +108,7 @@ export default {
     },
     async joinRoom(roomId) {
       const response = await this.$axios.put("actions/join/" + roomId);
-      this.isCardModalActive = false;
+      this.isJoinModalActive = false;
       this.refreshCallback();
     },
     async createRoom() {

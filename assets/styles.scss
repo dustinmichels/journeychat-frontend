@@ -89,7 +89,6 @@ $menu-item-hover-background-color: #002a4e;
 // Fullscreen
 $navbar-height: 3.25rem;
 
-// if gapless:
 .columns {
   &.is-fullheight {
     min-height: calc(100vh - (#{$navbar-height} - 0.75rem));

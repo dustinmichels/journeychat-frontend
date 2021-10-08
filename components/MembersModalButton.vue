@@ -1,14 +1,6 @@
 <template>
   <span>
-    <!-- <div class="buttons">
-      <b-button
-        rounded
-        icon-left="plus"
-        label="Add"
-        @click="isCardModalActive = true"
-      />
-    </div> -->
-    <button v-on:click="isCardModalActive = true">
+    <button @click="isCardModalActive = true">
       <b-icon icon="account-multiple" class="buttons"> </b-icon>
     </button>
 

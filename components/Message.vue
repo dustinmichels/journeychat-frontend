@@ -2,19 +2,14 @@
   <article class="media">
     <figure class="media-left">
       <p class="image is-64x64">
-        <img
-          width="64px"
-          height="64px"
-          :src="msg.user.avatar"
-          :style="styleObj"
-        />
+        <img width="64px" height="64px" :src="user.avatar" :style="styleObj" />
       </p>
     </figure>
     <div class="media-content">
       <div class="content">
         <p>
-          <strong>{{ msg.user.display_name }}</strong>
-          <small>@{{ msg.user.username }}</small>
+          <strong>{{ user.display_name }}</strong>
+          <small>@{{ user.username }}</small>
           <!-- append-to-body -->
           <b-tooltip :label="longDateTime(msg.timestamp)" type="is-dark">
             <small
@@ -40,6 +35,10 @@ import moment from "moment";
 export default {
   props: {
     msg: {
+      type: Object,
+      required: true
+    },
+    user: {
       type: Object,
       required: true
     }
