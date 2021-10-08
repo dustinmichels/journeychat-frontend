@@ -8,6 +8,9 @@ export default {
   getJoinedRooms: async function($axios) {
     return await $axios.$get("rooms/joined/");
   },
+  getPublicRooms: async function($axios) {
+    return await $axios.$get("rooms/");
+  },
   leaveRoom: async function($axios, roomId) {
     return await $axios.$put("actions/leave/" + roomId);
   },

@@ -119,9 +119,10 @@ export default {
       this.updateJoinableRooms();
     },
     async updateJoinableRooms() {
-      const publicRooms = await api.getJoinedRooms(this.$axios);
+      const publicRooms = await api.getPublicRooms(this.$axios);
+      console.log(publicRooms);
       this.joinableRooms = publicRooms.filter(
-        room => this.joinedRoomIds.indexOf(room.id) == -1
+        room => this.joinedRoomIds.indexOf(String(room.id)) == -1
       );
     },
     async joinRoom(roomId) {

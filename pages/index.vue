@@ -99,11 +99,9 @@ export default {
   components: { AddRoomModal },
   middleware: "auth",
 
-  beforeMount() {},
-
-  created() {
-    this.getJoinedRoomsInitial();
+  beforeMount() {
     this.socketConnect();
+    this.getJoinedRoomsInitial();
   },
 
   data() {
@@ -119,10 +117,10 @@ export default {
   },
 
   methods: {
+    // ===== HELPER METHODS =====
     snackbar(msg) {
       this.$buefy.snackbar.open(msg);
     },
-
     /** Create new empty room */
     roomBuilder(room) {
       return {
@@ -135,6 +133,7 @@ export default {
       };
     },
 
+    // ===== INIT METHODS =====
     socketConnect() {
       const token = this.$auth.strategy.token.get().split(" ")[1];
       this.socket = io("ws://127.0.0.1:8000", {
@@ -170,23 +169,6 @@ export default {
           this.chatData[data.room_id].unread++;
         }
       });
-      this.socket.on("online-ping", data => {
-        console.log(data);
-        this.snackbar(`${data} is online!`);
-      });
-    },
-
-    onSendMessage() {
-      console.log("Entered");
-      const input = this.$refs.chatbar;
-      const msgData = {
-        user_id: this.loggedInUser.id,
-        room_id: this.selectedRoomId,
-        timestamp: new Date().toISOString(),
-        text: input.value
-      };
-      this.socket.emit("new-message", msgData);
-      input.value = "";
     },
     async getJoinedRoomsInitial() {
       console.log("Loading joined rooms");
@@ -202,27 +184,22 @@ export default {
         console.log(e);
       }
     },
+
+    // ===== EVENTS =====
+    onSendMessage() {
+      console.log("Entered");
+      const input = this.$refs.chatbar;
+      this.socket.emit("new-message", {
+        user_id: this.loggedInUser.id,
+        room_id: this.selectedRoomId,
+        timestamp: new Date().toISOString(),
+        text: input.value
+      });
+      input.value = "";
+    },
     onJoinRoom(room) {
       this.initChatRoom(room);
       this.selectedRoomId = String(room.id);
-    },
-    initChatRoom(room) {
-      this.$set(this.chatData, String(room.id), this.roomBuilder(room));
-    },
-    async leaveRoom() {
-      console.log("leaving room");
-      const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
-      console.log(room);
-      this.$delete(this.chatData, room.id);
-      this.selectedRoomId = this.joinedRoomIds[0];
-    },
-    getUser(userId) {
-      let user = this.currRoom.members.find(x => x.id === userId);
-      if (typeof user === "undefined") {
-        return this.defaultUser;
-      } else {
-        return user;
-      }
     },
     async onSwitchRoom(roomId) {
       console.log("switch room", roomId);
@@ -243,6 +220,26 @@ export default {
       }
       // reset unread count
       this.chatData[roomId].unread = 0;
+    },
+    async leaveRoom() {
+      console.log("leaving room");
+      const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
+      console.log(room);
+      this.$delete(this.chatData, room.id);
+      this.selectedRoomId = this.joinedRoomIds[0];
+    },
+
+    initChatRoom(room) {
+      this.$set(this.chatData, String(room.id), this.roomBuilder(room));
+    },
+
+    getUser(userId) {
+      let user = this.currRoom.members.find(x => x.id === userId);
+      if (typeof user === "undefined") {
+        return this.defaultUser;
+      } else {
+        return user;
+      }
     }
   },
   watch: {
