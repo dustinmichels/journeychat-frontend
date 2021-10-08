@@ -30,17 +30,60 @@
     <!-- CHAT WINDOW -->
     <div class="column is-9 is-flex is-flex-direction-column">
       <!-- CHAT:HEADER -->
-      <div class="px-4">
-        <span class="is-size-3">{{ currRoom.name }} </span>
-        <MembersModalButton :members="currRoom.members" v-if="dataLoaded" />
+      <div class="px-4 py-2">
+        <div class="level">
+          <div class="level-left">
+            <p class="level-item">
+              <span class="is-size-3">{{ currRoom.name }}</span>
+            </p>
+            <p class="level-item">
+              <b-tag v-if="currRoom.isPrivate" type="is-warning" rounded
+                >Private</b-tag
+              >
+              <b-tag v-else type="is-primary" rounded>Public</b-tag>
+            </p>
+          </div>
+          <div class="level-right">
+            <!-- <p class="level-item">Room actions</p> -->
+            <p class="level-item">
+              <b-button
+                type="is-link"
+                outlined
+                rounded
+                label="View Members"
+                icon-left="account-multiple"
+              />
+            </p>
+            <p class="level-item">
+              <b-button
+                label="Invite"
+                type="is-link"
+                outlined
+                rounded
+                icon-left="plus"
+              />
+            </p>
+            <p class="level-item">
+              <b-button
+                label="Exit"
+                type="is-link"
+                outlined
+                rounded
+                icon-left="exit-run"
+                @click="leaveRoom"
+              />
+            </p>
+          </div>
+        </div>
+        <!-- <MembersModalButton :members="currRoom.members" v-if="dataLoaded" />
         <button v-else>
           <b-icon icon="account-multiple" class="buttons"> </b-icon>
         </button>
         <button v-on:click="leaveRoom">
           <b-icon icon="exit-run" class="buttons"> </b-icon>
-        </button>
+        </button> -->
       </div>
-      <hr style="margin: 0.5rem 0;" />
+      <hr style="margin: 0rem 0;" />
       <!-- CHAT:MESSAGES -->
       <div class="p-4" style="flex: 1; overflow: scroll;">
         <section v-if="dataLoaded">
@@ -95,13 +138,28 @@ import { mapGetters } from "vuex";
 import api from "@/api.js";
 import AddRoomModal from "../components/AddRoomModal.vue";
 
+/**
+ * chatData is populated by room objects
+ * Can generate from api-formatted room objects like this.
+ **/
+function createRoomObject(room) {
+  return {
+    name: room.name,
+    isPrivate: room.is_private,
+    dataLoaded: false,
+    messages: [],
+    members: [],
+    unread: 0
+  };
+}
+
 export default {
   components: { AddRoomModal },
   middleware: "auth",
 
   beforeMount() {
     this.socketConnect();
-    this.getJoinedRoomsInitial();
+    this.fetchInitialChatData();
   },
 
   data() {
@@ -121,16 +179,19 @@ export default {
     snackbar(msg) {
       this.$buefy.snackbar.open(msg);
     },
-    /** Create new empty room */
-    roomBuilder(room) {
-      return {
-        name: room.name,
-        isPrivate: room.is_private,
-        dataLoaded: false,
-        messages: [],
-        members: [],
-        unread: 0
-      };
+    chatDataAddRoom(room) {
+      this.$set(this.chatData, String(room.id), createRoomObject(room));
+    },
+    chatDataRemoveRoom(room) {
+      this.$delete(this.chatData, String(room.id));
+    },
+    getUser(userId) {
+      let user = this.currRoom.members.find(x => x.id === userId);
+      if (typeof user === "undefined") {
+        return this.defaultUser;
+      } else {
+        return user;
+      }
     },
 
     // ===== INIT METHODS =====
@@ -142,17 +203,6 @@ export default {
         transports: ["websocket", "polling", "flashsocket"],
         auth: { token: token }
       });
-      this.socket.on("connect", () => {
-        console.log("connected:", this.socket.id);
-        this.snackbar("Websocket connection established");
-      });
-      this.socket.on("connect_error", e => {
-        console.error(e.toString());
-        this.snackbar({
-          message: "Websocket connection error",
-          type: "is-danger"
-        });
-      });
       this.socket.on("disconnect", () => {
         console.log("disconnected:", this.socket.id);
         this.snackbar({
@@ -160,9 +210,12 @@ export default {
           type: "is-danger"
         });
       });
-      this.socket.on("reconnect", () => {
-        this.snackbar("Websocket reconnected");
-      });
+      /**
+       * on new-message:
+       * Push new message to chatData, for correct room
+       * Also increment unread count if that room is not selected
+       *
+       */
       this.socket.on("new-message", data => {
         this.chatData[data.room_id].messages.push(data);
         if (this.selectedRoomId != data.room_id) {
@@ -170,14 +223,11 @@ export default {
         }
       });
     },
-    async getJoinedRoomsInitial() {
-      console.log("Loading joined rooms");
+    async fetchInitialChatData() {
       try {
         const rooms = await api.getJoinedRooms(this.$axios);
-        // Add new room to chatData, in reactive way
-        rooms.forEach(room => this.initChatRoom(room));
-        // Init selected room to first value
-        this.selectedRoomId = this.joinedRoomIds[0];
+        rooms.forEach(room => this.chatDataAddRoom(room)); // add to this.chatData (properly)
+        this.selectedRoomId = this.joinedRoomIds[0]; // reset selected
         console.log("set selectedRoomId", this.selectedRoomId);
       } catch (e) {
         console.error("Could not fetch joined rooms");
@@ -187,7 +237,6 @@ export default {
 
     // ===== EVENTS =====
     onSendMessage() {
-      console.log("Entered");
       const input = this.$refs.chatbar;
       this.socket.emit("new-message", {
         user_id: this.loggedInUser.id,
@@ -198,15 +247,17 @@ export default {
       input.value = "";
     },
     onJoinRoom(room) {
-      this.initChatRoom(room);
+      this.chatDataAddRoom(room);
       this.selectedRoomId = String(room.id);
     },
+    /**
+     * When room is switched:
+     *  loaded data from backend, if missing
+     *  reset unread count
+     */
     async onSwitchRoom(roomId) {
-      console.log("switch room", roomId);
       let room = this.chatData[roomId];
-      // load data if missing
       if (!room.dataLoaded) {
-        console.log("loading data for", roomId);
         try {
           room.messages = await api.getRoomMessages(this.$axios, roomId);
           room.members = await api.getRoomMembers(this.$axios, roomId);
@@ -215,36 +266,17 @@ export default {
           console.log("error!");
           console.log(e);
         }
-      } else {
-        console.log("already have data", roomId);
       }
-      // reset unread count
       this.chatData[roomId].unread = 0;
     },
     async leaveRoom() {
-      console.log("leaving room");
       const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
-      console.log(room);
-      this.$delete(this.chatData, room.id);
+      this.chatDataRemoveRoom(room); // remove from chatData, properly
       this.selectedRoomId = this.joinedRoomIds[0];
-    },
-
-    initChatRoom(room) {
-      this.$set(this.chatData, String(room.id), this.roomBuilder(room));
-    },
-
-    getUser(userId) {
-      let user = this.currRoom.members.find(x => x.id === userId);
-      if (typeof user === "undefined") {
-        return this.defaultUser;
-      } else {
-        return user;
-      }
     }
   },
   watch: {
     selectedRoomId: async function(roomId) {
-      // roomId = String(roomId);
       this.dataLoaded = false;
       await this.onSwitchRoom(roomId);
       this.dataLoaded = this.currRoom.dataLoaded;
@@ -259,7 +291,7 @@ export default {
     currRoom: function() {
       const data = this.chatData[this.selectedRoomId];
       if (!data) {
-        return this.roomBuilder({});
+        return createRoomObject({});
       }
       return data;
     }
