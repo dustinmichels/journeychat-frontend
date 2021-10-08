@@ -31,7 +31,7 @@
     <div class="column is-9 is-flex is-flex-direction-column">
       <!-- CHAT:HEADER -->
       <div class="px-4 py-2">
-        <div class="level">
+        <div class="level is-mobile">
           <div class="level-left">
             <p class="level-item">
               <span class="is-size-3">{{ currRoom.name }}</span>
@@ -47,41 +47,31 @@
             <!-- <p class="level-item">Room actions</p> -->
             <p class="level-item">
               <b-button
+                title="View members"
                 type="is-link"
                 outlined
-                rounded
-                label="View Members"
                 icon-left="account-multiple"
               />
             </p>
             <p class="level-item">
               <b-button
-                label="Invite"
+                title="Invite"
                 type="is-link"
                 outlined
-                rounded
                 icon-left="plus"
               />
             </p>
             <p class="level-item">
               <b-button
-                label="Exit"
-                type="is-link"
+                title="Leave room"
+                type="is-danger"
                 outlined
-                rounded
                 icon-left="exit-run"
                 @click="leaveRoom"
               />
             </p>
           </div>
         </div>
-        <!-- <MembersModalButton :members="currRoom.members" v-if="dataLoaded" />
-        <button v-else>
-          <b-icon icon="account-multiple" class="buttons"> </b-icon>
-        </button>
-        <button v-on:click="leaveRoom">
-          <b-icon icon="exit-run" class="buttons"> </b-icon>
-        </button> -->
       </div>
       <hr style="margin: 0rem 0;" />
       <!-- CHAT:MESSAGES -->
