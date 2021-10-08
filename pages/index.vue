@@ -1,30 +1,33 @@
 <template>
   <section class="columns is-fullheight is-gapless is-mobile">
     <!-- SIDE MENU -->
-    <aside class="menu column is-2 has-background-dark">
+    <aside class="menu column is-3 has-background-dark">
       <p class="menu-label is-hidden-touch p-4 has-text-light">
         Your Rooms
       </p>
       <ul class="menu-list">
-        <li v-for="room of joinedRooms" :key="room.id">
+        <li v-for="(chatRoom, roomId) in chatData" :key="roomId">
           <a
-            v-on:click="selectedRoomId = room.id"
-            v-bind:class="{ 'is-active': room.id === selectedRoomId }"
+            @click="selectedRoomId = roomId"
+            :class="{ 'is-active': roomId === selectedRoomId }"
             class="px-4 has-text-light  "
           >
-            {{ room.name }}
-            <b-tag type="is-danger" v-if="chatData[room.id].unread">{{
-              chatData[room.id].unread
+            {{ chatRoom.name }}
+            <b-tag type="is-danger" v-if="chatRoom.unread">{{
+              chatRoom.unread
             }}</b-tag>
           </a>
         </li>
-        <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
+        <AddRoomModal
+          v-bind:joined-room-ids="joinedRoomIds"
+          v-on:joined-room="onJoinRoom($event)"
+        />
       </ul>
       <p class="menu-label"></p>
     </aside>
 
     <!-- CHAT WINDOW -->
-    <div class="column is-10 is-flex is-flex-direction-column">
+    <div class="column is-9 is-flex is-flex-direction-column">
       <!-- CHAT:HEADER -->
       <div class="px-4">
         <span class="is-size-3">{{ currRoom.name }} </span>
@@ -89,27 +92,28 @@
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
 import { api } from "@/api.js";
+import AddRoomModal from "../components/AddRoomModal.vue";
 
 export default {
+  components: { AddRoomModal },
   middleware: "auth",
 
   beforeMount() {},
 
   created() {
-    this.getJoinedRooms();
+    this.getJoinedRoomsInitial();
     this.socketConnect();
   },
 
   data() {
     return {
       selectedRoomId: 0,
-      joinedRooms: [],
       socket: null,
       dataLoaded: false,
       defaultUser: {
         username: "Unknown User"
       },
-      chatData: {} // Data about each room, keyed by room_id
+      chatData: {}
     };
   },
 
@@ -129,6 +133,7 @@ export default {
         unread: 0
       };
     },
+
     socketConnect() {
       const token = this.$auth.strategy.token.get().split(" ")[1];
       this.socket = io("ws://127.0.0.1:8000", {
@@ -181,20 +186,32 @@ export default {
       this.socket.emit("new-message", msgData);
       input.value = "";
     },
-    async getJoinedRooms() {
+    async getJoinedRoomsInitial() {
+      console.log("Loading joined rooms");
       try {
         const response = await this.$axios.get("rooms/joined/");
-        this.joinedRooms = response.data;
-        this.selectedRoomId = this.joinedRooms[0].id;
-        // Init chat data
-        this.joinedRooms.forEach(room => {
-          this.$set(this.chatData, room.id, this.roomBuilder(room));
-          // this.chatData[room.id] = this.roomBuilder(room);
-        });
+        const rooms = response.data;
+        // Add new room to chatData, in reactive way
+        console.log(rooms);
+        rooms.forEach(room => this.initChatRoom(room));
+        // Init selected room to first value
+        this.selectedRoomId = this.joinedRoomIds[0];
+        console.log("set selectedRoomId", this.selectedRoomId);
       } catch (e) {
-        this.joinedRooms = [];
-        this.selectedRoomId = 0;
+        console.error("Could not fetch joined rooms");
+        console.log(e);
       }
+    },
+    onJoinRoom(room) {
+      initChatRoom(room);
+      this.selectedRoomId = room.id;
+    },
+    initChatRoom(room) {
+      this.$set(this.chatData, String(room.id), this.roomBuilder(room));
+    },
+    async getJoinedRooms() {
+      console.warn("calling dead method");
+      return;
     },
     async leaveRoom() {
       const response = await this.$axios.put(
@@ -210,10 +227,12 @@ export default {
         return user;
       }
     },
-    async onRoomSwitch(roomId) {
+    async onSwitchRoom(roomId) {
+      console.log("switch room", roomId);
       let room = this.chatData[roomId];
       // load data if missing
       if (!room.dataLoaded) {
+        console.log("loading data for", roomId);
         try {
           room.messages = await api.getRoomMessages(this.$axios, roomId);
           room.members = await api.getRoomMembers(this.$axios, roomId);
@@ -222,6 +241,8 @@ export default {
           console.log("error!");
           console.log(e);
         }
+      } else {
+        console.log("already have data", roomId);
       }
       // reset unread count
       this.chatData[roomId].unread = 0;
@@ -230,20 +251,14 @@ export default {
   watch: {
     selectedRoomId: async function(roomId) {
       this.dataLoaded = false;
-      await this.onRoomSwitch(roomId);
+      await this.onSwitchRoom(roomId);
       this.dataLoaded = this.currRoom.dataLoaded;
     }
   },
   computed: {
     ...mapGetters(["loggedInUser"]),
-    /** Retrieve joined room from list */
-    joinedRoom: function() {
-      const res = this.joinedRooms.find(x => x.id === this.selectedRoomId);
-      if (res == undefined) {
-        return { name: "" };
-      } else {
-        return res;
-      }
+    joinedRoomIds() {
+      return Object.keys(this.chatData);
     },
     /** Retrieve all current room data from chatData */
     currRoom: function() {

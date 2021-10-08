@@ -14,7 +14,11 @@
           </p>
         </header>
         <div class="card-content">
-          <div v-for="(room, index) in displayRooms" :key="index" class="media">
+          <div
+            v-for="(room, index) in joinableRooms"
+            :key="index"
+            class="media"
+          >
             <div class="media-content">
               <div class="content">
                 {{ room.name }}
@@ -95,14 +99,12 @@
 
 <script>
 export default {
-  props: ["refreshCallback", "joinedRooms"],
+  props: ["joinedRoomIds"],
   data() {
     return {
       isJoinModalActive: false,
       isCreateModalActive: false,
-      activeTab: 0,
-      rooms: [],
-      isSwitchedCustom: "Public",
+      joinableRooms: [],
       createRoomForm: {
         roomName: "",
         isPrivate: "false"
@@ -110,33 +112,35 @@ export default {
     };
   },
   methods: {
-    launchModal() {
+    async launchModal() {
       this.isJoinModalActive = true;
-      this.getRooms();
+      this.updateJoinableRooms();
     },
-    async getRooms() {
+    async updateJoinableRooms() {
+      const publicRooms = await this.fetchPublicRooms();
+      this.joinableRooms = publicRooms.filter(
+        room => this.joinedRoomIds.indexOf(room.id) == -1
+      );
+    },
+    async fetchPublicRooms() {
       const response = await this.$axios.get("rooms/");
-      this.rooms = response.data;
+      return response.data;
     },
     async joinRoom(roomId) {
       const response = await this.$axios.put("actions/join/" + roomId);
+      const room = response.data;
       this.isJoinModalActive = false;
-      this.refreshCallback();
+      this.$emit("joined-room", room);
     },
     async createRoom() {
-      await this.$axios.post("rooms/", {
+      const response = await this.$axios.post("rooms/", {
         name: this.createRoomForm.roomName,
         is_private: this.createRoomForm.isPrivate
       });
       this.createRoomForm.roomName = "";
       this.isCreateModalActive = false;
-      this.refreshCallback();
-    }
-  },
-  computed: {
-    displayRooms() {
-      let joinedRoomIds = this.joinedRooms.map(x => x.id);
-      return this.rooms.filter(room => joinedRoomIds.indexOf(room.id) == -1);
+      // TODO: error handling
+      this.initRoomCallback(response.data);
     }
   }
 };
