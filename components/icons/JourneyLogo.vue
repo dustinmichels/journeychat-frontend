@@ -23,6 +23,14 @@
       </style>
     </defs>
     <title>Journey-Logo</title>
+    <rect width="10" height="10">
+      <animate
+        attributeName="rx"
+        values="0;5;0"
+        dur="10s"
+        repeatCount="indefinite"
+      />
+    </rect>
     <path
       class="cls-1"
       d="M42.1,45.79a14.66,14.66,0,0,1,2.33-7L.68,1v91.6l43.76-37.8A14.65,14.65,0,0,1,42.1,45.79Z"

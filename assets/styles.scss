@@ -10,6 +10,7 @@ $twitter: #4099ff;
 $twitter-invert: findColorInvert($twitter);
 // $dark2: #002a4e;
 $dark: #002a4e;
+$link: #3e9231;
 
 // Lists and maps
 $custom-colors: null !default;
@@ -88,7 +89,8 @@ $menu-item-hover-color: $text-strong;
 // $menu-item-active-background-color: #002a4e;
 
 // Fullscreen
-$navbar-height: 3.25rem;
+// $navbar-height: 3.25rem;
+$navbar-height: 3.5rem;
 
 .columns {
   &.is-fullheight {

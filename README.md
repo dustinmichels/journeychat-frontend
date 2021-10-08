@@ -17,6 +17,8 @@ $ npm run start
 $ npm run generate
 ```
 
+Authentication flow based on [article](https://www.digitalocean.com/community/tutorials/implementing-authentication-in-nuxtjs-app)
+
 For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
 
 ## Special Directories

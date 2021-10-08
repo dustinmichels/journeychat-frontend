@@ -65,6 +65,7 @@ export default {
           data: formify(this.email, this.password)
         });
         // this.$axios.setToken(this.$auth.strategy.token.get());
+        this.$router.push("/");
       } catch (e) {
         this.error = e.response.data.message || e.response.data.detail;
         console.log(e.response); // for DEBUG

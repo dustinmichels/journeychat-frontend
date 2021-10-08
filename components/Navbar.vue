@@ -38,10 +38,10 @@
 </template>
 
 <style lang="scss">
-nav {
-  // border-bottom: 1px solid gray;
-  box-shadow: 0px 0px 0px 1px #eee;
-}
+// nav {
+// border-bottom: 1px solid gray;
+// box-shadow: 0px 0px 0px 1px #eee;
+// }
 </style>
 
 <script>
