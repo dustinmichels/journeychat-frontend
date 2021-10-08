@@ -65,11 +65,10 @@
             ref="chatbar"
             placeholder="Your message..."
             @keyup.enter="onSendMessage"
-            autofocus
           />
         </div>
         <div class="control">
-          <button class="button is-info" @click="onSendMessage">
+          <button class="button is-info send-btn" @click="onSendMessage">
             <b-icon icon="send" size="is-small"> </b-icon>
           </button>
         </div>
@@ -80,6 +79,12 @@
   </section>
 </template>
 
+<style scoped>
+.send-btn {
+  width: 60px;
+}
+</style>
+
 <script>
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
@@ -87,6 +92,8 @@ import { api } from "@/api.js";
 
 export default {
   middleware: "auth",
+
+  beforeMount() {},
 
   created() {
     this.getJoinedRooms();
@@ -107,6 +114,10 @@ export default {
   },
 
   methods: {
+    snackbar(msg) {
+      this.$buefy.snackbar.open(msg);
+    },
+
     /** Create new empty room */
     roomBuilder(room) {
       return {
@@ -128,12 +139,17 @@ export default {
       });
       this.socket.on("connect", () => {
         console.log("connected:", this.socket.id);
+        this.snackbar("Websocket connection established");
       });
       this.socket.on("connect_error", e => {
         console.error(e.toString());
       });
       this.socket.on("disconnect", () => {
         console.log("disconnected:", this.socket.id);
+        this.snackbar("Websocket connection lost!");
+      });
+      this.socket.on("reconnect", () => {
+        this.snackbar("Websocket reconnected");
       });
       this.socket.on("new-message", data => {
         this.chatData[data.room_id].messages.push(data);

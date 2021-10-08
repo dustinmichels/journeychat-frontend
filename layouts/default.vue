@@ -1,7 +1,7 @@
 <template>
   <!-- <div style="height:100vh; overflow:hidden;"> -->
   <div>
-    <Navbar />
+    <NavbarNew />
     <Nuxt />
   </div>
 </template>

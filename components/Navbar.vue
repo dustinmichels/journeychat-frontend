@@ -1,7 +1,8 @@
 <template>
-  <nav class="navbar is-light">
+  <nav class="navbar is-dark">
     <div class="container">
       <div class="navbar-brand">
+        <!-- <JourneyLogo /> -->
         <nuxt-link class="navbar-item" to="/">JourneyChat</nuxt-link>
         <button class="button navbar-burger">
           <span></span>
@@ -35,6 +36,13 @@
     </div>
   </nav>
 </template>
+
+<style lang="scss">
+nav {
+  // border-bottom: 1px solid gray;
+  box-shadow: 0px 0px 0px 1px #eee;
+}
+</style>
 
 <script>
 import { mapGetters } from "vuex";
