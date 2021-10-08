@@ -8,15 +8,15 @@
           <Notification :message="error" v-if="error" />
 
           <form method="post" @submit.prevent="register">
+            <b-field label="Username">
+              <b-input v-model="username" maxlength="30" required></b-input>
+            </b-field>
             <b-field label="Email">
               <b-input type="email" v-model="email" maxlength="30"> </b-input>
             </b-field>
             <b-field label="Password">
               <b-input type="password" v-model="password" password-reveal>
               </b-input>
-            </b-field>
-            <b-field label="Display Name">
-              <b-input v-model="display_name" maxlength="30" required></b-input>
             </b-field>
             <div class="control">
               <button type="submit" class="button is-dark is-fullwidth">
@@ -47,7 +47,7 @@ export default {
 
   data() {
     return {
-      display_name: "",
+      username: "",
       email: "",
       password: "",
       error: null
@@ -67,7 +67,7 @@ export default {
       try {
         // Signup new user
         await this.$axios.post("auth/signup", {
-          display_name: this.display_name,
+          username: this.username,
           email: this.email,
           password: this.password
         });

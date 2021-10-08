@@ -1,47 +1,47 @@
 <template>
-  <nav class="navbar is-dark">
-    <div class="container">
-      <div class="navbar-brand">
-        <!-- <JourneyLogo /> -->
-        <nuxt-link class="navbar-item" to="/">JourneyChat</nuxt-link>
-        <button class="button navbar-burger">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-      <div class="navbar-menu">
-        <div class="navbar-end">
-          <div
-            class="navbar-item has-dropdown is-hoverable"
-            v-if="isAuthenticated"
-          >
-            <a class="navbar-link">
-              {{ loggedInUser.username }}
-            </a>
-            <div class="navbar-dropdown">
-              <nuxt-link class="navbar-item" to="/profile"
-                >My Profile</nuxt-link
-              >
-              <hr class="navbar-divider" />
-              <a class="navbar-item" @click="logout">Logout</a>
-            </div>
+  <b-navbar type="is-dark">
+    <template #brand>
+      <b-navbar-item tag="nuxt-link" to="/">
+        <icons-journey-logo :height="30" />
+        <em>CHAT</em>
+      </b-navbar-item>
+    </template>
+    <!-- <template #start>
+      <b-navbar-item tag="nuxt-link" to="/about">
+        About
+      </b-navbar-item>
+    </template> -->
+    <template #end>
+      <template v-if="isAuthenticated">
+        <b-navbar-dropdown :label="loggedInUser.username">
+          <b-navbar-item tag="nuxt-link" to="/profile">
+            My Profile
+          </b-navbar-item>
+          <b-navbar-item @click="logout">
+            Logout
+          </b-navbar-item>
+        </b-navbar-dropdown>
+      </template>
+      <template v-else>
+        <b-navbar-item tag="div">
+          <div class="buttons">
+            <b-button tag="nuxt-link" to="/register" type="is-link">
+              <strong>Sign up</strong>
+            </b-button>
+            <b-button tag="nuxt-link" to="/login" type="is-light">
+              Log in
+            </b-button>
           </div>
-          <template v-else>
-            <nuxt-link class="navbar-item" to="/register">Register</nuxt-link>
-            <nuxt-link class="navbar-item" to="/login">Log In</nuxt-link>
-          </template>
-        </div>
-      </div>
-    </div>
-  </nav>
+        </b-navbar-item>
+      </template>
+    </template>
+  </b-navbar>
 </template>
 
 <style lang="scss">
-// nav {
-// border-bottom: 1px solid gray;
-// box-shadow: 0px 0px 0px 1px #eee;
-// }
+nav {
+  box-shadow: 0px 0px 0px 1px #eee;
+}
 </style>
 
 <script>
