@@ -23,33 +23,7 @@
     </aside>
 
     <div class="column is-10 is-flex is-flex-direction-column">
-      <!-- HEADER -->
-      <div class="px-4">
-        <span class="is-size-3">{{ selectedRoom.name }} </span>
-        <MembersModal :members="members" />
-        <button v-on:click="leaveRoom">
-          <b-icon icon="exit-run" class="buttons"> </b-icon>
-        </button>
-      </div>
-      <hr style="margin: 0.5rem 0;" />
-      <!-- MESSAGES -->
-      <div class="p-4" style="flex: 1; overflow: scroll;">
-        <section v-if="dataLoaded">
-          <template v-if="!messages.length">
-            No messages!
-          </template>
-          <template v-else>
-            <Message
-              v-for="(msg, index) in messagesWithUsers"
-              :key="index"
-              :msg="msg"
-            />
-          </template>
-        </section>
-        <template v-else>
-          <LoadingMessage />
-        </template>
-      </div>
+      <ChatWindow :room-data="currRoomData" :key="selectedRoomId" />
 
       <!-- SEARCH -->
       <div class="field has-addons p-4">
@@ -76,17 +50,12 @@
 </template>
 
 <script>
-import Message from "~/components/Message";
-import Modal from "~/components/Modal";
-import LoadingMessage from "~/components/LoadingMessage";
-import { mapGetters } from "vuex";
-
 import io from "socket.io-client";
-
-// import { getRooms } from "@/api.js";
+import { mapGetters } from "vuex";
+import { api } from "@/api.js";
+import ChatWindow from "../components/ChatWindow.vue";
 
 export default {
-  components: { Message, LoadingMessage, Modal },
   middleware: "auth",
 
   created() {
@@ -104,19 +73,22 @@ export default {
       defaultUser: {
         username: "Unknown User"
       },
-      dataLoaded: false
+      dataLoaded: false,
+      chatData: {} // Data about each room, keyed by room_id
     };
   },
 
   methods: {
-    socketConnect() {
-      if (!this.socket) {
-        this.createSocketConnection();
-      } else {
-        console.log("Already connected!");
-      }
+    /** Create new empty room */
+    roomBuilder(room) {
+      return {
+        room: room,
+        dataLoaded: false,
+        messages: [],
+        members: []
+      };
     },
-    createSocketConnection() {
+    socketConnect() {
       const token = this.$auth.strategy.token.get().split(" ")[1];
       this.socket = io("ws://127.0.0.1:8000", {
         path: "/ws/socket.io",
@@ -124,22 +96,17 @@ export default {
         transports: ["websocket", "polling", "flashsocket"],
         auth: { token: token }
       });
-
       this.socket.on("connect", () => {
         console.log("connected:", this.socket.id);
       });
-
       this.socket.on("connect_error", e => {
         console.error(e.toString());
       });
-
       this.socket.on("disconnect", () => {
         console.log("disconnected:", this.socket.id);
       });
-
       this.socket.on("new-message", data => {
-        console.log("recieving something in the chat!");
-        console.log(data);
+        console.log("recieved new message", data);
         this.messages.push(data);
       });
     },
@@ -157,11 +124,13 @@ export default {
     },
     async getJoinedRooms() {
       try {
-        // const headers = { Authorization: this.$auth.strategy.token.get() };
-        // const response = await this.$axios.get("rooms/joined/", { headers });
         const response = await this.$axios.get("rooms/joined/");
         this.joinedRooms = response.data;
         this.selectedRoomId = this.joinedRooms[0].id;
+        // Init chat data
+        this.joinedRooms.forEach(room => {
+          this.chatData[room.id] = this.roomBuilder(room);
+        });
       } catch (e) {
         this.joinedRooms = [];
         this.selectedRoomId = 0;
@@ -171,16 +140,7 @@ export default {
       const response = await this.$axios.put(
         "actions/leave/" + this.selectedRoomId
       );
-      // console.log(response);
-      // this.selectedRoomId = this.joinedRooms[0];
       this.getJoinedRooms();
-    },
-    async getMembers() {
-      const response = await this.$axios.get(
-        "members/room/" + this.selectedRoomId
-      );
-      // console.log(response);
-      this.members = response.data;
     },
     getUser(userId) {
       let user = this.members.find(x => x.id === userId);
@@ -189,21 +149,38 @@ export default {
       } else {
         return user;
       }
+    },
+    async onRoomSwitch(roomId) {
+      let room = this.chatData[roomId];
+      if (!room.dataLoaded) {
+        try {
+          console.log("Loading data...");
+          room.messages = await api.getRoomMessages(this.$axios, roomId);
+          room.members = await api.getRoomMembers(this.$axios, roomId);
+          room.dataLoaded = true;
+        } catch (e) {
+          console.log("error!");
+          console.log(e);
+        }
+      }
     }
   },
   watch: {
     selectedRoomId: async function(roomId) {
+      this.onRoomSwitch(roomId);
+
       this.dataLoaded = false;
       if (roomId == undefined) {
         this.messages = [];
         this.dataLoaded = true;
       }
       try {
-        const response = await this.$axios.get(
-          `messages/room/${roomId}/?skip=0&limit=100`
+        this.messages = await api.getRoomMessages(this.$axios, roomId);
+        this.members = await api.getRoomMembers(
+          this.$axios,
+          this.selectedRoomId
         );
-        this.messages = response.data;
-        await this.getMembers();
+        // this.messages = response.data;
         this.dataLoaded = true;
       } catch (e) {
         console.log("error!");
@@ -222,20 +199,14 @@ export default {
         return res;
       }
     },
+    currRoomData: function() {
+      return this.chatData[this.selectedRoomId];
+    },
     messagesWithUsers: function() {
       return this.messages.map(m => {
         m["user"] = this.getUser(m.user_id);
         return m;
       });
-    },
-    windowHeight() {
-      try {
-        let windowHeight = window.innerHeight;
-        let navbarHeight = document.getElementById("navbar").offsetHeight;
-        return `${windowHeight - navbarHeight}px`;
-      } catch {
-        return "500px";
-      }
     }
   }
 };
