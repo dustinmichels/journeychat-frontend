@@ -23,7 +23,33 @@
     </aside>
 
     <div class="column is-10 is-flex is-flex-direction-column">
-      <ChatWindow :room-data="currRoomData" :key="selectedRoomId" />
+      <!-- HEADER -->
+      <div class="px-4">
+        <span class="is-size-3">{{ selectedRoom.name }} </span>
+        <MembersModal :members="members" />
+        <button v-on:click="leaveRoom">
+          <b-icon icon="exit-run" class="buttons"> </b-icon>
+        </button>
+      </div>
+      <hr style="margin: 0.5rem 0;" />
+      <!-- MESSAGES -->
+      <div class="p-4" style="flex: 1; overflow: scroll;">
+        <section v-if="dataLoaded">
+          <template v-if="!messages.length">
+            No messages!
+          </template>
+          <template v-else>
+            <Message
+              v-for="(msg, index) in messagesWithUsers"
+              :key="index"
+              :msg="msg"
+            />
+          </template>
+        </section>
+        <template v-else>
+          <LoadingMessage />
+        </template>
+      </div>
 
       <!-- SEARCH -->
       <div class="field has-addons p-4">
@@ -53,7 +79,6 @@
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
 import { api } from "@/api.js";
-import ChatWindow from "../components/ChatWindow.vue";
 
 export default {
   middleware: "auth",
