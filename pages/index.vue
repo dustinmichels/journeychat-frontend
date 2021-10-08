@@ -13,6 +13,9 @@
             class="px-4 has-text-light  "
           >
             {{ room.name }}
+            <b-tag type="is-danger" v-if="chatData[room.id].unread">{{
+              chatData[room.id].unread
+            }}</b-tag>
           </a>
         </li>
         <Modal :joined-rooms="joinedRooms" :refresh-callback="getJoinedRooms" />
@@ -134,7 +137,9 @@ export default {
       });
       this.socket.on("new-message", data => {
         this.chatData[data.room_id].messages.push(data);
-        this.chatData[data.room_id].unread++;
+        if (this.selectedRoomId != data.room_id) {
+          this.chatData[data.room_id].unread++;
+        }
       });
     },
     onSendMessage() {
@@ -179,10 +184,9 @@ export default {
       }
     },
     async onRoomSwitch(roomId) {
-      console.log("room switch!");
       let room = this.chatData[roomId];
+      // load data if missing
       if (!room.dataLoaded) {
-        console.log("Loading data...");
         try {
           room.messages = await api.getRoomMessages(this.$axios, roomId);
           room.members = await api.getRoomMembers(this.$axios, roomId);
@@ -191,9 +195,9 @@ export default {
           console.log("error!");
           console.log(e);
         }
-      } else {
-        console.log("Already got data");
       }
+      // reset unread count
+      this.chatData[roomId].unread = 0;
     }
   },
   watch: {
