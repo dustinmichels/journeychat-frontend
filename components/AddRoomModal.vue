@@ -98,6 +98,8 @@
 </style>
 
 <script>
+import api from "@/api.js";
+
 export default {
   props: ["joinedRoomIds"],
   data() {
@@ -117,30 +119,25 @@ export default {
       this.updateJoinableRooms();
     },
     async updateJoinableRooms() {
-      const publicRooms = await this.fetchPublicRooms();
+      const publicRooms = await api.getJoinedRooms(this.$axios);
       this.joinableRooms = publicRooms.filter(
         room => this.joinedRoomIds.indexOf(room.id) == -1
       );
     },
-    async fetchPublicRooms() {
-      const response = await this.$axios.get("rooms/");
-      return response.data;
-    },
     async joinRoom(roomId) {
-      const response = await this.$axios.put("actions/join/" + roomId);
-      const room = response.data;
-      this.isJoinModalActive = false;
+      const room = await api.joinRoom(this.$axios, roomId);
       this.$emit("joined-room", room);
+      this.isJoinModalActive = false;
     },
     async createRoom() {
-      const response = await this.$axios.post("rooms/", {
-        name: this.createRoomForm.roomName,
-        is_private: this.createRoomForm.isPrivate
-      });
-      this.createRoomForm.roomName = "";
-      this.isCreateModalActive = false;
-      // TODO: error handling
-      this.initRoomCallback(response.data);
+      const room = await api.createRoom(
+        this.$axios,
+        this.createRoomForm.roomName,
+        this.createRoomForm.isPrivate
+      );
+      this.$emit("created-room", room);
+      this.createRoomForm.roomName = ""; // clear form
+      this.isCreateModalActive = false; // close modal
     }
   }
 };

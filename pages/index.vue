@@ -21,6 +21,7 @@
         <AddRoomModal
           v-bind:joined-room-ids="joinedRoomIds"
           v-on:joined-room="onJoinRoom($event)"
+          v-on:created-room="onJoinRoom($event)"
         />
       </ul>
       <p class="menu-label"></p>
@@ -91,7 +92,7 @@
 <script>
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
-import { api } from "@/api.js";
+import api from "@/api.js";
 import AddRoomModal from "../components/AddRoomModal.vue";
 
 export default {
@@ -174,6 +175,7 @@ export default {
         this.snackbar(`${data} is online!`);
       });
     },
+
     onSendMessage() {
       console.log("Entered");
       const input = this.$refs.chatbar;
@@ -189,10 +191,8 @@ export default {
     async getJoinedRoomsInitial() {
       console.log("Loading joined rooms");
       try {
-        const response = await this.$axios.get("rooms/joined/");
-        const rooms = response.data;
+        const rooms = await api.getJoinedRooms(this.$axios);
         // Add new room to chatData, in reactive way
-        console.log(rooms);
         rooms.forEach(room => this.initChatRoom(room));
         // Init selected room to first value
         this.selectedRoomId = this.joinedRoomIds[0];
@@ -203,21 +203,18 @@ export default {
       }
     },
     onJoinRoom(room) {
-      initChatRoom(room);
-      this.selectedRoomId = room.id;
+      this.initChatRoom(room);
+      this.selectedRoomId = String(room.id);
     },
     initChatRoom(room) {
       this.$set(this.chatData, String(room.id), this.roomBuilder(room));
     },
-    async getJoinedRooms() {
-      console.warn("calling dead method");
-      return;
-    },
     async leaveRoom() {
-      const response = await this.$axios.put(
-        "actions/leave/" + this.selectedRoomId
-      );
-      this.getJoinedRooms();
+      console.log("leaving room");
+      const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
+      console.log(room);
+      this.$delete(this.chatData, room.id);
+      this.selectedRoomId = this.joinedRoomIds[0];
     },
     getUser(userId) {
       let user = this.currRoom.members.find(x => x.id === userId);
@@ -250,6 +247,7 @@ export default {
   },
   watch: {
     selectedRoomId: async function(roomId) {
+      // roomId = String(roomId);
       this.dataLoaded = false;
       await this.onSwitchRoom(roomId);
       this.dataLoaded = this.currRoom.dataLoaded;
