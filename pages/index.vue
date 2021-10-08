@@ -79,7 +79,7 @@
   </section>
 </template>
 
-<style scoped>
+<style lang="scss">
 .send-btn {
   width: 60px;
 }
@@ -143,10 +143,17 @@ export default {
       });
       this.socket.on("connect_error", e => {
         console.error(e.toString());
+        this.snackbar({
+          message: "Websocket connection error",
+          type: "is-danger"
+        });
       });
       this.socket.on("disconnect", () => {
         console.log("disconnected:", this.socket.id);
-        this.snackbar("Websocket connection lost!");
+        this.snackbar({
+          message: "Websocket connection lost!",
+          type: "is-danger"
+        });
       });
       this.socket.on("reconnect", () => {
         this.snackbar("Websocket reconnected");
@@ -156,6 +163,10 @@ export default {
         if (this.selectedRoomId != data.room_id) {
           this.chatData[data.room_id].unread++;
         }
+      });
+      this.socket.on("online-ping", data => {
+        console.log(data);
+        this.snackbar(`${data} is online!`);
       });
     },
     onSendMessage() {

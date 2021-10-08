@@ -1,7 +1,9 @@
 <template>
   <section>
     <div class="buttons p-4">
-      <b-button rounded icon-left="plus" label="Add" @click="launchModal" />
+      <b-button rounded icon-left="plus" type="is-link" @click="launchModal">
+        <span class="is-hidden-touch">Add More</span>
+      </b-button>
     </div>
 
     <b-modal v-model="isJoinModalActive" :width="640" scroll="keep">
@@ -80,6 +82,16 @@
     </b-modal>
   </section>
 </template>
+
+<style lang="scss">
+// @import "~/bulma/sass/utilities/_all.sass";
+
+// @import "~bulma/sass/utilities/_all";
+
+// @include mobile {
+//   background-color: red;
+// }
+</style>
 
 <script>
 export default {
