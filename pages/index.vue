@@ -166,7 +166,6 @@ export default {
       },
       selectedRoomId: 0,
       socket: null,
-      dataLoaded: false,
       defaultUser: {
         username: "Unknown User"
       },
@@ -226,10 +225,9 @@ export default {
       });
       /**
        * on new-message:
-       * Push new message to chatData, for correct room
-       * Also increment unread count if that room is not selected
-       *
-       */
+       *  Push new message to chatData, for correct room
+       *  Also increment unread count if that room is not selected
+       **/
       this.socket.on("new-message", data => {
         this.chatData[data.room_id].messages.push(data);
         if (this.selectedRoomId != data.room_id) {
@@ -301,9 +299,7 @@ export default {
   },
   watch: {
     selectedRoomId: async function(roomId) {
-      this.dataLoaded = false;
       await this.onSwitchRoom(roomId);
-      this.dataLoaded = this.currRoom.dataLoaded;
     }
   },
   computed: {

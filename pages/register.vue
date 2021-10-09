@@ -14,6 +14,9 @@
             <b-field label="Email">
               <b-input type="email" v-model="email" maxlength="30"> </b-input>
             </b-field>
+            <b-field label="Display">
+              <b-input v-model="displayName" maxlength="30"> </b-input>
+            </b-field>
             <b-field label="Password">
               <b-input type="password" v-model="password" password-reveal>
               </b-input>
@@ -50,6 +53,7 @@ export default {
       username: "",
       email: "",
       password: "",
+      displayName: "",
       error: null
     };
   },
@@ -69,14 +73,13 @@ export default {
         await this.$axios.post("auth/signup", {
           username: this.username,
           email: this.email,
-          password: this.password
+          password: this.password,
+          display_name: this.displayName
         });
         // Proceed to login
         await this.$auth.loginWith("local", {
           data: formify(this.email, this.password)
         });
-        // store token with axios
-        // this.$axios.setToken(this.$auth.strategy.token.get());
         // reroute to home page
         this.$router.push("/");
       } catch (e) {
