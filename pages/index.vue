@@ -9,7 +9,7 @@
     </b-modal>
 
     <!-- SIDE MENU -->
-    <aside class="menu column is-3 has-background-dark">
+    <aside class="menu column is-narrow has-background-dark">
       <p class="menu-label is-hidden-touch p-4 has-text-light">
         Your Rooms
       </p>
@@ -36,7 +36,7 @@
     </aside>
 
     <!-- CHAT WINDOW -->
-    <div class="column is-9 is-flex is-flex-direction-column">
+    <div class="column is-flex is-flex-direction-column">
       <!-- CHAT:HEADER -->
       <div class="px-4 py-2">
         <div class="level is-mobile">
@@ -150,6 +150,12 @@ function createRoomObject(room) {
   };
 }
 
+function createUnkownUser() {
+  return {
+    username: "Unknown User"
+  };
+}
+
 export default {
   middleware: "auth",
 
@@ -160,16 +166,13 @@ export default {
 
   data() {
     return {
+      chatData: {},
+      selectedRoomId: 0,
+      socket: null,
       isModalActive: {
         inviteMember: false,
         displayMembers: false
-      },
-      selectedRoomId: 0,
-      socket: null,
-      defaultUser: {
-        username: "Unknown User"
-      },
-      chatData: {}
+      }
     };
   },
 
@@ -191,7 +194,7 @@ export default {
     getUser(userId) {
       let user = this.currRoom.members.find(x => x.id === userId);
       if (typeof user === "undefined") {
-        return this.defaultUser;
+        return createUnkownUser();
       } else {
         return user;
       }
@@ -282,7 +285,7 @@ export default {
       this.chatData[roomId].unread = 0;
     },
     onLeaveRoom() {
-      if (this.joinedRoomIds.length == 1) {
+      if (this.joinedRoomIds.length === 1) {
         this.$buefy.dialog.alert(
           "No can do! You must remain in at least one room!"
         );

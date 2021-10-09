@@ -2,7 +2,7 @@
   <section>
     <div class="buttons p-4">
       <b-button rounded icon-left="plus" type="is-link" @click="launchModal">
-        <span class="is-hidden-touch">Add More</span>
+        Add More
       </b-button>
     </div>
 
