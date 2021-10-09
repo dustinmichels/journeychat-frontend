@@ -152,7 +152,9 @@ function createRoomObject(room) {
 
 function createUnkownUser() {
   return {
-    username: "Unknown User"
+    username: "Unknown User",
+    avatar:
+      "https://www.pngitem.com/pimgs/m/52-526033_unknown-person-icon-png-transparent-png.png"
   };
 }
 
@@ -264,6 +266,10 @@ export default {
     onJoinRoom(room) {
       this.chatDataAddRoom(room);
       this.selectedRoomId = String(room.id);
+      this.socket.emit("join-room", {
+        user_id: this.loggedInUser.id,
+        room_id: room.id
+      });
     },
     /**
      * When room is switched:
@@ -303,6 +309,7 @@ export default {
         type: "is-success"
       });
       this.chatDataRemoveRoom(room); // remove from chatData, properly
+      this.socket.emit("leave-room", room.id); // remove from websocket room
       this.selectedRoomId = this.joinedRoomIds[0];
     }
   },
