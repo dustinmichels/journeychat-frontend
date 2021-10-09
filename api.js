@@ -22,5 +22,8 @@ export default {
       name: roomName,
       is_private: isPrivate
     });
+  },
+  inviteMemberToRoom: async function($axios, { roomId, username }) {
+    return await $axios.$put(`actions/invite/${roomId}/${username}`);
   }
 };

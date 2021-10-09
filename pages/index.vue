@@ -1,6 +1,12 @@
 <template>
   <section class="columns is-fullheight is-gapless is-mobile">
-    <!-- <MembersModal v-bind:is-active="isMembersModalActive" /> -->
+    <b-modal v-model="isModalActive.displayMembers" :width="640" scroll="keep">
+      <ModalDisplayMembers :members="currRoom.members" />
+    </b-modal>
+
+    <b-modal v-model="isModalActive.inviteMember" :width="640" scroll="keep">
+      <ModalInviteMember :selectedRoomId="selectedRoomId" />
+    </b-modal>
 
     <!-- SIDE MENU -->
     <aside class="menu column is-3 has-background-dark">
@@ -45,16 +51,16 @@
               <b-tag v-else type="is-primary" rounded>Public</b-tag>
             </p>
           </div>
+          <!-- CHAT:HEADER CONTROL BUTTONS -->
           <div class="level-right">
             <p class="level-item">
-              <MembersModalButton :members="currRoom.members" />
-              <!-- <b-button
+              <b-button
                 title="View members"
                 type="is-link"
                 outlined
                 icon-left="account-multiple"
-                @click="isMembersModalActive = true"
-              /> -->
+                @click="isModalActive.displayMembers = true"
+              />
             </p>
             <p class="level-item">
               <b-button
@@ -62,6 +68,7 @@
                 type="is-link"
                 outlined
                 icon-left="plus"
+                @click="isModalActive.inviteMember = true"
               />
             </p>
             <p class="level-item">
@@ -70,7 +77,7 @@
                 type="is-danger"
                 outlined
                 icon-left="exit-run"
-                @click="leaveRoom"
+                @click="onLeaveRoom"
               />
             </p>
           </div>
@@ -79,7 +86,7 @@
       <hr style="margin: 0rem 0;" />
       <!-- CHAT:MESSAGES -->
       <div class="p-4" style="flex: 1; overflow: scroll;">
-        <section v-if="dataLoaded">
+        <section v-if="currRoom.dataLoaded">
           <template v-if="!currRoom.messages.length">
             No messages!
           </template>
@@ -93,7 +100,7 @@
           </div>
         </section>
         <template v-else>
-          <LoadingMessage />
+          <MessagePlaceholder />
         </template>
       </div>
       <!-- CHAT:SEND -->
@@ -113,8 +120,6 @@
           </button>
         </div>
       </div>
-
-      <!-- END -->
     </div>
   </section>
 </template>
@@ -129,7 +134,6 @@
 import io from "socket.io-client";
 import { mapGetters } from "vuex";
 import api from "@/api.js";
-import AddRoomModal from "../components/AddRoomModal.vue";
 
 /**
  * chatData is populated by room objects
@@ -147,7 +151,6 @@ function createRoomObject(room) {
 }
 
 export default {
-  components: { AddRoomModal },
   middleware: "auth",
 
   beforeMount() {
@@ -157,8 +160,11 @@ export default {
 
   data() {
     return {
+      isModalActive: {
+        inviteMember: false,
+        displayMembers: false
+      },
       selectedRoomId: 0,
-      isMembersModalActive: false,
       socket: null,
       dataLoaded: false,
       defaultUser: {
@@ -169,6 +175,10 @@ export default {
   },
 
   methods: {
+    handleClose(e) {
+      console.log("clsoing");
+      console.log(e);
+    },
     // ===== HELPER METHODS =====
     snackbar(msg) {
       this.$buefy.snackbar.open(msg);
@@ -186,6 +196,16 @@ export default {
       } else {
         return user;
       }
+    },
+
+    // ===== LAUNCHING MODALS =====
+    launchMembersModal() {
+      this.$buefy.modal.open({
+        parent: this,
+        component: MembersModalVue,
+        props: { members: this.currRoom.members }
+        //
+      });
     },
 
     // ===== INIT METHODS =====
@@ -263,8 +283,18 @@ export default {
       }
       this.chatData[roomId].unread = 0;
     },
+    onLeaveRoom() {
+      this.$buefy.dialog.confirm({
+        message: `Are you sure you want to leave the room ${this.currRoom.name}?`,
+        onConfirm: this.leaveRoom
+      });
+    },
     async leaveRoom() {
       const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
+      this.$buefy.toast.open({
+        message: `You have left ${this.currRoom.name}`,
+        type: "is-success"
+      });
       this.chatDataRemoveRoom(room); // remove from chatData, properly
       this.selectedRoomId = this.joinedRoomIds[0];
     }
