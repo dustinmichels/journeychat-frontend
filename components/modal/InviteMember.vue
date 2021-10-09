@@ -42,12 +42,12 @@ export default {
   methods: {
     async inviteMember() {
       try {
-        const res = await api.inviteMemberToRoom(this.$axios, {
+        const room = await api.inviteMemberToRoom(this.$axios, {
           roomId: this.selectedRoomId,
           username: this.form.username
         });
         this.errorMsg = "";
-        this.successMsg = `Success! Added ${this.form.username} to ${res.name}`;
+        this.successMsg = `Success! Added ${this.form.username} to ${room.name}`;
       } catch (e) {
         this.successMsg = "";
         this.errorMsg = "Error! " + e.response?.data?.detail || null;

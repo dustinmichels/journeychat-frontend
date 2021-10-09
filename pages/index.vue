@@ -271,6 +271,12 @@ export default {
       this.selectedRoomId = String(room.id);
       this.socket.emit("join-room", { room: room, user: this.loggedInUser });
     },
+    /** TODO */
+    onInvitedMember() {
+      // need user and room
+      // this.socket.emit("join-room", { room: room, user: user });
+      return;
+    },
     /**
      * When room is switched:
      *  loaded data from backend, if missing
