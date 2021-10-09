@@ -239,6 +239,9 @@ export default {
           this.chatData[data.room_id].unread++;
         }
       });
+      this.socket.on("new-member", ({ room, user }) => {
+        this.chatData[room.id].members.push(user);
+      });
     },
     async fetchInitialChatData() {
       try {
@@ -266,10 +269,7 @@ export default {
     onJoinRoom(room) {
       this.chatDataAddRoom(room);
       this.selectedRoomId = String(room.id);
-      this.socket.emit("join-room", {
-        user_id: this.loggedInUser.id,
-        room_id: room.id
-      });
+      this.socket.emit("join-room", { room: room, user: this.loggedInUser });
     },
     /**
      * When room is switched:
