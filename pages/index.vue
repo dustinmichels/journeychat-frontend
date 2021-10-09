@@ -282,12 +282,18 @@ export default {
       this.chatData[roomId].unread = 0;
     },
     onLeaveRoom() {
+      if (this.joinedRoomIds.length == 1) {
+        this.$buefy.dialog.alert(
+          "No can do! You must remain in at least one room!"
+        );
+        return;
+      }
       this.$buefy.dialog.confirm({
         message: `Are you sure you want to leave the room ${this.currRoom.name}?`,
-        onConfirm: this.leaveRoom
+        onConfirm: this._leaveCurrentRoom
       });
     },
-    async leaveRoom() {
+    async _leaveCurrentRoom() {
       const room = await api.leaveRoom(this.$axios, this.selectedRoomId);
       this.$buefy.toast.open({
         message: `You have left ${this.currRoom.name}`,

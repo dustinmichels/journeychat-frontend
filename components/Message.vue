@@ -10,7 +10,6 @@
         <p>
           <strong>{{ user.display_name }}</strong>
           <small>@{{ user.username }}</small>
-          <!-- append-to-body -->
           <b-tooltip :label="longDateTime(msg.timestamp)" type="is-dark">
             <small
               class="has-text-grey"
@@ -43,6 +42,9 @@ function isoify(timestamp) {
   return timestamp;
 }
 
+/**
+ * This component is for displaying a single message in the chat.
+ */
 export default {
   props: {
     msg: {
